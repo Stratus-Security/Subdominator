@@ -1,0 +1,302 @@
+[
+  {
+    "cname": [ "teamwork.com" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "Oops - We didn't find your site.",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Teamwork",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "wishpond.com" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "https://www.wishpond.com/404?campaign=true",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Wishpond",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "aftership.com" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "Oops.</h2><p class=\"text-muted text-tight\">The page you're looking for doesn't exist.",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Aftership",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "ideas.aha.io" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "There is no portal here ... sending you back to Aha!",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Aha",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "domains.tictail.com" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": [
+      "to target URL: <a href=\"https://tictail.com",
+      "Start selling on Tictail."
+    ],
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Tictail",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "brightcovegallery.com", "gallery.video", "bcvp0rtal.com" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "<p class=\"bc-gallery-error-code\">Error Code: 404</p>",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Brightcove",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "bigcartel.com" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "<h1>Oops! We couldn&#8217;t find that page.</h1>",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "BigCartel",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "simplebooklet.com" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "We can't find this <a href=\"https://simplebooklet.com",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "SimpleBooklet",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "vendecommerce.com" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "Looks like you've traveled too far into cyberspace.",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Vend",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "-portal.apigee.net" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "NXDOMAIN",
+    "http_status": null,
+    "nxdomain": true,
+    "service": "Apigee",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "activehosted.com" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "alt=\"LIGHTTPD - fly light.\"",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "ActiveCampaign",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "endpoint.mykajabi.com" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "<h1>The page you were looking for doesn't exist.</h1>",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Kajabi",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "custom-proxy.leadpages.net", "leadpages.net" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "Double check that you have the right web address and give it another go!</p>",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "LeadPages.com",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "proposify.biz" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "If you need immediate assistance, please contact <a href=\"mailto:support@proposify.biz",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Proposify",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "privatedomain.sgizmo.com", "privatedomain.surveygizmo.eu", "privatedomain.sgizmoca.com" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "data-html-name",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Surveygizmo",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "clientaccess.tave.com" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "<h1>Error 404: Page Not Found</h1>",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Tave",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "thinkific.com" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "You may have mistyped the address or the page may have moved.",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Thinkific",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "<p>This page will be updated automatically when your app is published.</p>",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Appery.io",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "<!doctype html><html><head><meta charset=\"utf-8\"><title>Loading...</title>",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "DatoCMS.com",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "jazzhr.com" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "This account no longer active",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "JazzHR",
+    "status": "Edge Case",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "www.wufoo.com", "subdomain.wufoo.com", "hello.wufoo.com", "pizzapalace.wufoo.com" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "Hmmm....something is not right.",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Wufoo",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "proxy.sprintful.com", "cname.sprintful.com", "sprintful.com" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "This domain name does not have a default page configured.",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Sprintful",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "s1.pagewiz.net" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "pagewiz",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Pagewiz",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "gitbook.io" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "Domain not found",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Gitbook",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "getflywheel.com" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "We're sorry, you've landed on a page that is hosted by Flywheel",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Flywheel",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "cname.announcekit.app" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "Error 404 - AnnounceKit",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Announcekit",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "flexbe.com" ],
+    "discussion": "",
+    "documentation": "",
+    "fingerprint": "flexbe",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Flexbe",
+    "status": "Edge Case",
+    "vulnerable": true
+  }
+]
