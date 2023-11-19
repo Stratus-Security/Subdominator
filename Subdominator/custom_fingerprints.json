@@ -126,7 +126,7 @@
   {
     "cname": [ "endpoint.mykajabi.com" ],
     "discussion": "",
-    "documentation": "",
+    "documentation": "https://pastes.io/ik2rhibj6m",
     "fingerprint": "<h1>The page you were looking for doesn't exist.</h1>",
     "http_status": null,
     "nxdomain": false,
@@ -190,10 +190,11 @@
     "vulnerable": true
   },
   {
-    "cname": [ "" ],
+    "cname": [ "appery.io" ],
+    "a": [ "35.171.252.37" ],
     "discussion": "",
     "documentation": "",
-    "fingerprint": "<p>This page will be updated automatically when your app is published.</p>",
+    "fingerprint": "This page will be updated automatically when your app is published.",
     "http_status": null,
     "nxdomain": false,
     "service": "Appery.io",
@@ -201,7 +202,7 @@
     "vulnerable": true
   },
   {
-    "cname": [ "" ],
+    "cname": [ "datocms.com" ],
     "discussion": "",
     "documentation": "",
     "fingerprint": "<!doctype html><html><head><meta charset=\"utf-8\"><title>Loading...</title>",
@@ -297,6 +298,66 @@
     "nxdomain": false,
     "service": "Flexbe",
     "status": "Edge Case",
+    "vulnerable": true
+  },
+  {
+    "cname": [],
+    "a": [
+      "3.13.222.255",
+      "3.13.246.91",
+      "3.130.60.26"
+    ],
+    "discussion": "https://github.com/punk-security/dnsReaper/pull/157",
+    "documentation": "",
+    "fingerprint": "The page you were looking for doesn",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "ConvertKit",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "domains.tribeplatform.com" ],
+    "discussion": "https://github.com/EdOverflow/can-i-take-over-xyz/issues/286",
+    "documentation": "https://community.tribe.so/knowledge-base-2-0/post/custom-domain-GN59yUKKHrgKdBX",
+    "fingerprint": "Community not found",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Tribe",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "forms.cs.zohohost.com", "forms.cs.zohohost.eu" ],
+    "discussion": "https://github.com/punk-security/dnsReaper/pull/105",
+    "documentation": "",
+    "fingerprint": "HTTP_STATUS=400",
+    "http_status": 400,
+    "nxdomain": false,
+    "service": "Zoho Forms",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "forms.cs.zohohost.in" ],
+    "discussion": "https://github.com/punk-security/dnsReaper/pull/105",
+    "documentation": "",
+    "fingerprint": "HTTP_STATUS=403",
+    "http_status": 403,
+    "nxdomain": false,
+    "service": "Zoho Forms India",
+    "status": "Vulnerable",
+    "vulnerable": true
+  },
+  {
+    "cname": [ "brandpad.io" ],
+    "discussion": "",
+    "documentation": "https://hackerone.com/reports/1474784",
+    "fingerprint": "Sorry, that page doesn't exist",
+    "http_status": null,
+    "nxdomain": false,
+    "service": "Brandpad",
+    "status": "Vulnerable",
     "vulnerable": true
   }
 ]

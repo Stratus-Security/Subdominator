@@ -9,6 +9,17 @@
 
   <ItemGroup>
     <PackageReference Include="DnsClient" Version="1.7.0" />
+    <PackageReference Include="Nager.PublicSuffix" Version="2.4.0" />
+    <PackageReference Include="Whois" Version="3.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="custom_fingerprints.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="public_suffix_list.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
