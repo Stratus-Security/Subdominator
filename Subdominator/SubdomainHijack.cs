@@ -41,7 +41,7 @@ public class SubdomainHijack
         { "Pantheon", new(){ "The gods are wise, but do not know of the site which you seek." } },
         { "Readthedocs", new(){ "is unknown to Read the Docs" } },
         { "Short.io", new(){ "This domain is not configured on Short.io" } },
-        { "Wix", new(){ "Connect it to your Wix website in just a few easy steps" } },
+        { "Wix", new(){ "Connect it to your Wix website in just a few easy steps", "Error ConnectYourDomain occurred" } },
         { "Ngrok", new(){ "ngrok.io not found" } },
         { "Wordpress", new(){ "Do you want to register " } }
     };
@@ -302,7 +302,7 @@ public class SubdomainHijack
                 {
                     foreach (var fingerprintMatch in fingerprint.FingerprintTexts)
                     {
-                        if (responseBody.Contains(fingerprintMatch))
+                        if (!string.IsNullOrWhiteSpace(fingerprintMatch) && responseBody.Contains(fingerprintMatch))
                         {
                             return true;
                         }
