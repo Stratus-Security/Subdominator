@@ -1,6 +1,5 @@
 ﻿using Nager.PublicSuffix;
 using System.Diagnostics;
-using System.Runtime.Intrinsics.Arm;
 
 namespace Subdominator;
 
@@ -10,9 +9,6 @@ internal class Program
 
     static async Task Main(string[] args)
     {
-        var stopwatch1 = new Stopwatch();
-        stopwatch1.Start();
-
         // Define maximum concurrent tasks
         int maxConcurrentTasks = 50;
         bool verbose = false;
@@ -52,8 +48,7 @@ internal class Program
         cts.Cancel(); // Signal the update task to stop
         await updateTask; // Ensure the update task completes before finishing the program
 
-        stopwatch1.Stop();
-        Console.WriteLine("Done! Running took: " + stopwatch1.Elapsed.TotalSeconds);
+        Console.WriteLine("Done! Running took: " + stopwatch.Elapsed.TotalSeconds);
     }
 
     static async Task PeriodicUpdateAsync(TimeSpan interval, Action action, CancellationToken cancellationToken)
