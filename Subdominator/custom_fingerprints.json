@@ -191,7 +191,7 @@
   },
   {
     "cname": [ "appery.io" ],
-    "a": [ "35.171.252.37" ],
+    "a": [ "35.171.252.37", "107.20.248.61" ],
     "discussion": "",
     "documentation": "",
     "fingerprint": "This page will be updated automatically when your app is published.",

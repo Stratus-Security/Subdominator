@@ -76,7 +76,8 @@ public class SubdomainHijack
         { "Unbounce", new(){ "unbouncepages.com" } },
         { "UserVoice", new(){ "uservoice.com" } },
         { "Webflow", new(){ "proxy.webflow.com", "proxy-ssl.webflow.com" } },
-        { "Wix", new(){ "wixdns.net" } }
+        { "Wix", new(){ "wixdns.net" } },
+        { "Vercel", new(){ ".vercel.com", "cname.vercel-dns.com" } }
     };
 
     // At what point to I just make my own master list???
@@ -90,7 +91,8 @@ public class SubdomainHijack
     {
         { "Github", new(){ "185.199.108.153", "185.199.109.153", "185.199.110.153", "185.199.111.153" } },
         { "Fastly", new(){ "151.101." } },
-        { "Pantheon", new(){ "23.185.0." } }
+        { "Pantheon", new(){ "23.185.0." } },
+        { "Vercel", new(){ "76.76.21.21" } }
     };
 
     private Dictionary<string, List<string>> _aaaaOverrides = new()
@@ -246,8 +248,6 @@ public class SubdomainHijack
             {
                 return (true, new Fingerprint() { Service = "Domain Available" }, subdomainDns.Cnames);
             }
-
-            // TODO: Should we detect dead domains that don't appear available?
         }
 
         // Now check all the fingerprints

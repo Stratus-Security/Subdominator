@@ -24,6 +24,11 @@ public class FingerprintTests
         );
     }
 
+    /// <summary>
+    /// This test is a good way to check everything works
+    /// It will also detect some as vulnerable if the fingerprint matches without a valid parent pointing to it
+    /// </summary>
+    /// <returns></returns>
     [TestMethod]
     public async Task TestFingerprints()
     {
