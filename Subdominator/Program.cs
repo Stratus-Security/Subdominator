@@ -1,23 +1,51 @@
 ﻿using Nager.PublicSuffix;
 using System.Diagnostics;
+using System.Text;
+using System.Net.Http.Headers;
+using CommandLine;
 
 namespace Subdominator;
 
-internal class Program
+public class Program
 {
     private static readonly object _fileLock = new();
 
-    static async Task Main(string[] args)
+    public static async Task Main(string[] args)
     {
+        Task asyncOperation = Task.CompletedTask;
+
+        Parser.Default.ParseArguments<Options>(args)
+            .WithParsed(o => {
+                asyncOperation = RunSubdominator(o);
+            });
+
+        await asyncOperation;
+    }
+
+    static async Task RunSubdominator(Options o)
+    {
+        // Get domain(s) from the options
+        var rawDomains = new List<string>();
+        if (!string.IsNullOrEmpty(o.DomainsFile))
+        {
+            string file = o.DomainsFile;
+            rawDomains = (await File.ReadAllLinesAsync(file)).ToList();
+        }
+        else if (!string.IsNullOrEmpty(o.Domain))
+        {
+            rawDomains.Add(o.Domain);
+        }
+        else 
+        {
+            throw new Exception("A domain (-d) or file (-l) must be specified.");
+        }
+
         // Define maximum concurrent tasks
         int maxConcurrentTasks = 50;
         bool verbose = false;
 
-        // Get domains
-        var rawDomains = await File.ReadAllLinesAsync("subs.txt");
-
         // Pre-check domains passed in and filter any that are invalid
-        var domains = FilterAndNormalizeDomains(rawDomains).ToList();
+        var domains = FilterAndNormalizeDomains(rawDomains);
 
         // Pre-load fingerprints to memory
         var hijackChecker = new SubdomainHijack();
@@ -35,12 +63,12 @@ internal class Program
         {
             var elapsed = stopwatch.Elapsed;
             var rate = completedTasks / elapsed.TotalSeconds;
-            Console.WriteLine($"{completedTasks}/{domains.Count} domains processed. Average rate: {rate:F2} domains/sec");
+            Console.WriteLine($"{completedTasks}/{domains.Count()} domains processed. Average rate: {rate:F2} domains/sec");
         }, cts.Token);
 
         await Parallel.ForEachAsync(domains, new ParallelOptions { MaxDegreeOfParallelism = maxConcurrentTasks }, async (domain, cancellationToken) =>
         {
-            await CheckAndLogDomain(hijackChecker, domain, verbose);
+            await CheckAndLogDomain(hijackChecker, domain, o.OutputFile, verbose);
             Interlocked.Increment(ref completedTasks);
         });
 
@@ -67,7 +95,7 @@ internal class Program
         }
     }
 
-    static IEnumerable<string> FilterAndNormalizeDomains(string[] domains, bool verbose = false)
+    static IEnumerable<string> FilterAndNormalizeDomains(List<string> domains, bool verbose = false)
     {
         var domainParser = new DomainParser(new FileTldRuleProvider("public_suffix_list.dat"));
 
@@ -91,7 +119,7 @@ internal class Program
         return normalizedDomains.Where(d => d.IsValid).Select(d => d.Original);
     }
 
-    static async Task CheckAndLogDomain(SubdomainHijack hijackChecker, string domain, bool verbose = false)
+    static async Task CheckAndLogDomain(SubdomainHijack hijackChecker, string domain, string outputFile, bool verbose = false)
     {
         try
         {
@@ -113,7 +141,7 @@ internal class Program
                     Console.ResetColor();
                     Console.Write($"] {domain}{cnameStr}\n");
 
-                    File.AppendAllText("results.txt", output + Environment.NewLine);
+                    File.AppendAllText(outputFile, output + Environment.NewLine);
                 }
             }
         }

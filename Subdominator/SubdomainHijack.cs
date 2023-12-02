@@ -2,9 +2,6 @@
 using Nager.PublicSuffix;
 using Subdominator.Models;
 using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
 using System.Text;
 using System.Text.Json;
 
