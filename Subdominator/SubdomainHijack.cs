@@ -127,7 +127,7 @@ public class SubdomainHijack
     public async Task<IEnumerable<Fingerprint>> GetFingerprintsAsync(bool update = false)
     {
         // Don't reload if they're already cached in memory
-        if (!_fingerprints.Any())
+        if (_fingerprints.Count == 0)
         {
             string filePath = "fingerprints.json";
             string customFilePath = "custom_fingerprints.json";
@@ -158,7 +158,7 @@ public class SubdomainHijack
                 }
                 else
                 {
-                    var customFingerprintsUrl = "https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/custom_fingerprints.json";
+                    var customFingerprintsUrl = "https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Subdominator/custom_fingerprints.json";
                     customFingerprintsData = await _httpClient.GetStringAsync(customFingerprintsUrl);
 
                     await File.WriteAllTextAsync(customFilePath, customFingerprintsData);
