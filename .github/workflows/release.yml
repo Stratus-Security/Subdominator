@@ -1,0 +1,43 @@
+name: "Create Releases"
+
+on:
+  release:
+    types: [published]
+    
+jobs:
+  release:
+    name: Release
+    strategy:
+      matrix:
+        kind: ['linux', 'windows']
+        include:
+          - kind: linux
+            os: ubuntu-latest
+            target: linux-x64
+            ext: ''
+          - kind: windows
+            os: windows-latest
+            target: win-x64
+            ext: '.exe'
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build
+        shell: bash
+        run: |
+          release_name="Subdominator-${{ matrix.target }}"
+          # Build everything
+          dotnet publish Subdominator/Subdominator.csproj --runtime "${{ matrix.target }}" -p:PublishTrimmed=true -c Release -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true --self-contained true -o "Release-${{ matrix.target }}" 
+      - name: Publish
+        uses: softprops/action-gh-release@v0.1.5
+        with:
+          files: "Release-${{ matrix.target }}/*${{ matrix.ext }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
