@@ -1,7 +1,5 @@
 ﻿using Nager.PublicSuffix;
 using System.Diagnostics;
-using System.Text;
-using System.Net.Http.Headers;
 using CommandLine;
 
 namespace Subdominator;
@@ -41,8 +39,8 @@ public class Program
         }
 
         // Define maximum concurrent tasks
-        int maxConcurrentTasks = 50;
-        bool verbose = false;
+        int maxConcurrentTasks = o.Threads;
+        bool verbose = o.Verbose;
 
         // Pre-check domains passed in and filter any that are invalid
         var domains = FilterAndNormalizeDomains(rawDomains);
