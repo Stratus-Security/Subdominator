@@ -1,6 +1,6 @@
 ﻿using Nager.PublicSuffix;
 using System.Diagnostics;
-using CommandLine;
+using System.CommandLine;
 
 namespace Subdominator;
 
@@ -10,14 +10,37 @@ public class Program
 
     public static async Task Main(string[] args)
     {
-        Task asyncOperation = Task.CompletedTask;
+        var rootCommand = new RootCommand("A subdomain takover detection tool for cool kids");
 
-        Parser.Default.ParseArguments<Options>(args)
-            .WithParsed(o => {
-                asyncOperation = RunSubdominator(o);
-            });
+        var optionDomain = new Option<string>(new[] { "-d", "--domain" }, "A single domain to check");
+        var optionList = new Option<string>(new[] { "-l", "--list" }, "A list of domains to check (line delimited)");
+        var optionOutput = new Option<string>(new[] { "-o", "--output" }, "Output subdomains to a file");
+        var optionThreads = new Option<int>(new[] { "-t", "--threads" }, () => 50, "Number of domains to check at once");
+        var optionVerbose = new Option<bool>(new[] { "-v", "--verbose" }, "Print extra information");
 
-        await asyncOperation;
+        rootCommand.AddOption(optionDomain);
+        rootCommand.AddOption(optionList);
+        rootCommand.AddOption(optionOutput);
+        rootCommand.AddOption(optionThreads);
+        rootCommand.AddOption(optionVerbose);
+
+        // Handler
+        rootCommand.SetHandler(async (string domain, string domainsFile, string outputFile, int threads, bool verbose) =>
+        {
+            var options = new Options
+            {
+                Domain = domain,
+                DomainsFile = domainsFile,
+                OutputFile = outputFile,
+                Threads = threads,
+                Verbose = verbose
+            };
+            await RunSubdominator(options);
+        }, optionDomain, optionList, optionOutput, optionThreads, optionVerbose);
+
+
+        // Parse the incoming args and invoke the handler
+        await rootCommand.InvokeAsync(args);
     }
 
     static async Task RunSubdominator(Options o)

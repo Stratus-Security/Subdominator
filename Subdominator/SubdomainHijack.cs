@@ -164,9 +164,12 @@ public class SubdomainHijack
                     await File.WriteAllTextAsync(customFilePath, customFingerprintsData);
                 }
 
+                var options = new JsonSerializerOptions();
+                var context = new JsonContext(options);
+
                 // Deserialize the JSON data directly into a list of Fingerprint objects
-                var fingerprints = JsonSerializer.Deserialize<List<Fingerprint>>(fingerprintsData) ?? new List<Fingerprint>();
-                var customFingerprints = JsonSerializer.Deserialize<List<Fingerprint>>(customFingerprintsData) ?? new List<Fingerprint>();
+                var fingerprints = JsonSerializer.Deserialize(fingerprintsData, context.ListFingerprint) ?? [];
+                var customFingerprints = JsonSerializer.Deserialize(customFingerprintsData, context.ListFingerprint) ?? [];
 
                 // Find and store appropriate fingerprints
                 foreach (var fingerprint in fingerprints)
