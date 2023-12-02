@@ -37,7 +37,6 @@ public class Program
             await RunSubdominator(options);
         }, optionDomain, optionList, optionOutput, optionThreads, optionVerbose);
 
-
         // Parse the incoming args and invoke the handler
         await rootCommand.InvokeAsync(args);
     }
@@ -81,9 +80,13 @@ public class Program
         using var cts = new CancellationTokenSource();
         var updateTask = PeriodicUpdateAsync(updateInterval, () =>
         {
-            var elapsed = stopwatch.Elapsed;
-            var rate = completedTasks / elapsed.TotalSeconds;
-            Console.WriteLine($"{completedTasks}/{domains.Count()} domains processed. Average rate: {rate:F2} domains/sec");
+            // Skip the first print since it's 0 anyway
+            if (completedTasks != 0)
+            {
+                var elapsed = stopwatch.Elapsed;
+                var rate = completedTasks / elapsed.TotalSeconds;
+                Console.WriteLine($"{completedTasks}/{domains.Count()} domains processed. Average rate: {rate:F2} domains/sec");
+            }
         }, cts.Token);
 
         await Parallel.ForEachAsync(domains, new ParallelOptions { MaxDegreeOfParallelism = maxConcurrentTasks }, async (domain, cancellationToken) =>
@@ -96,7 +99,11 @@ public class Program
         cts.Cancel(); // Signal the update task to stop
         await updateTask; // Ensure the update task completes before finishing the program
 
-        Console.WriteLine("Done! Running took: " + stopwatch.Elapsed.TotalSeconds);
+        // One last output for clarity
+        var elapsed = stopwatch.Elapsed;
+        var rate = completedTasks / elapsed.TotalSeconds;
+        Console.WriteLine($"{completedTasks}/{domains.Count()} domains processed. Average rate: {rate:F2} domains/sec");
+        Console.WriteLine("Done in " + stopwatch.Elapsed.TotalSeconds + "s");
     }
 
     static async Task PeriodicUpdateAsync(TimeSpan interval, Action action, CancellationToken cancellationToken)
@@ -147,10 +154,9 @@ public class Program
             if (isVulnerable || verbose)
             {
                 var fingerPrintName = fingerprint == null ? "-" : fingerprint.Service;
-                var cnameStr = isVulnerable && cnames != null ? $" - CNAMEs: {string.Join(", ", cnames)}" : string.Empty;
 
                 // Build the output string
-                var output = $"[{fingerPrintName}] {domain}{cnameStr}";
+                var output = $"[{fingerPrintName}] {domain}";
 
                 // Thread-safe console print and append to results file
                 lock (_fileLock)
@@ -159,7 +165,7 @@ public class Program
                     Console.ForegroundColor = isVulnerable ? ConsoleColor.Red : ConsoleColor.Green;
                     Console.Write(fingerPrintName);
                     Console.ResetColor();
-                    Console.Write($"] {domain}{cnameStr}\n");
+                    Console.Write($"] {domain}\n");
 
                     File.AppendAllText(outputFile, output + Environment.NewLine);
                 }

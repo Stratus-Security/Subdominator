@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <None Update="custom_fingerprints.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="public_suffix_list.dat">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
