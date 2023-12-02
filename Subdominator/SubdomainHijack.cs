@@ -121,7 +121,7 @@ public class SubdomainHijack
 
         _dnsClient = new LookupClient();
 
-        _domainParser = new DomainParser(new FileTldRuleProvider("public_suffix_list.dat"));
+        _domainParser = new DomainParser(new WebTldRuleProvider("https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Subdominator/public_suffix_list.dat"));
     }
 
     public async Task<IEnumerable<Fingerprint>> GetFingerprintsAsync(bool update = false)

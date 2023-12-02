@@ -24,7 +24,6 @@ public class Program
         rootCommand.AddOption(optionThreads);
         rootCommand.AddOption(optionVerbose);
 
-        // Handler
         rootCommand.SetHandler(async (string domain, string domainsFile, string outputFile, int threads, bool verbose) =>
         {
             var options = new Options
@@ -118,7 +117,7 @@ public class Program
 
     static IEnumerable<string> FilterAndNormalizeDomains(List<string> domains, bool verbose = false)
     {
-        var domainParser = new DomainParser(new FileTldRuleProvider("public_suffix_list.dat"));
+        var domainParser = new DomainParser(new WebTldRuleProvider("https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Subdominator/public_suffix_list.dat"));
 
         // Normalize domains and check validity
         var normalizedDomains = domains
