@@ -34,7 +34,7 @@ jobs:
         run: |
           release_name="Subdominator-${{ matrix.target }}"
           # Build everything
-          dotnet publish Subdominator/Subdominator.csproj --runtime "${{ matrix.target }}" -p:PublishTrimmed=true -c Release -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true --self-contained true -o "Release-${{ matrix.target }}" 
+          dotnet publish Subdominator/Subdominator.csproj -r "${{ matrix.target }}" -c Release -o "Release-${{ matrix.target }}" 
       - name: Publish
         uses: softprops/action-gh-release@v0.1.5
         with:
