@@ -1,3 +1,6 @@
+![GitHub Actions CI](https://github.com/Stratus-Security/Subdominator/workflows/CI/badge.svg)
+![GitHub all releases](https://img.shields.io/github/downloads/Stratus-Security/Subdominator/total)
+
 # Subdominator 🚀
 
 ## Welcome to the Subdominator Club!
