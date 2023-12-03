@@ -167,7 +167,10 @@ public class Program
                     Console.ResetColor();
                     Console.Write($"] {domain}\n");
 
-                    File.AppendAllText(outputFile, output + Environment.NewLine);
+                    if (!string.IsNullOrWhiteSpace(outputFile))
+                    {
+                        File.AppendAllText(outputFile, output + Environment.NewLine);
+                    }
                 }
             }
         }
