@@ -6,7 +6,7 @@
 ## Welcome to the Subdominator Club!
 Meet **Subdominator**, your new favourite CLI tool for detecting subdomain takeovers. It's designed to be fast, accurate, and dependable, offering a significant improvement over other available tools.
 
-🔍 Precision and speed are our goal. Subdominator delivers better results without the wait.
+🔍 Precision and speed are our goal. Subdominator delivers better results without the wait, see the benchmark and feature comparison below for details.
 
 ## Installing 🛠️
 To quickly, get up and running, you can download the latest release for [windows](https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator.exe) or [linux](https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator).
@@ -34,6 +34,10 @@ Subdominator.exe -d sub.example.com
 -v, --verbose    Print extra information
 --help           Display this help screen.
 ```
+
+## Demo
+The tool was run across 1000 passively gathered subdomains:
+![Demo](https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Demo.gif)
 
 ## Benchmark 📊
 A benchmark was run across ~100,000 subdomains to compare performance with other popular tools
