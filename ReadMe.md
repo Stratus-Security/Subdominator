@@ -4,7 +4,7 @@
 # Subdominator 🚀
 
 ## Welcome to the Subdominator Club!
-Meet **Subdominator**, your new favourite CLI tool for detecting subdomain takeovers. It's designed to be fast, accurate, and dependable, offering a significant improvement over other available tools.
+Meet **Subdominator**, your new favourite CLI tool for detecting subdomain takeovers. It's designed to be fast, accurate, and dependable, offering [a significant improvement over other available tools](https://www.stratussecurity.com/post/the-ultimate-subdomain-takeover-tool).
 
 🔍 Precision and speed are our goal. Subdominator delivers better results without the wait, see the benchmark and feature comparison below for details.
 
