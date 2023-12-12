@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Subdominator.Tests;
@@ -7,12 +6,12 @@ namespace Subdominator.Tests;
 [TestClass]
 public class CoverageTests
 {
-    private HttpClient _http;
+    private HttpClient _http = new();
 
     [TestInitialize]
-    public async Task Setup()
+    public void Setup()
     {
-        _http = new HttpClient();
+        _http = new();
         _http.DefaultRequestHeaders.UserAgent.Clear();
         _http.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("Subdominator", "1"));
     }
@@ -26,7 +25,7 @@ public class CoverageTests
     [TestMethod]
     public async Task TestDomainCoverage()
     {
-        var myFingerprints = (await new SubdomainHijack().GetFingerprintsAsync()).ToList();
+        var myFingerprints = (await new SubdomainHijack().GetFingerprintsAsync(false)).ToList();
         var canITakeOverFingerprints = await GetCanITakeOverXyzFingerprints();
         var subdoverFingerprints = await GetSubdoverFingerprints();
         var subjackFingerprints = await GetSubjackFingerprints();

@@ -17,14 +17,16 @@ public class Program
         var optionOutput = new Option<string>(new[] { "-o", "--output" }, "Output subdomains to a file");
         var optionThreads = new Option<int>(new[] { "-t", "--threads" }, () => 50, "Number of domains to check at once");
         var optionVerbose = new Option<bool>(new[] { "-v", "--verbose" }, "Print extra information");
+        var excludeUnlikely = new Option<bool>(new[] { "-eu", "--exclude-unlikely" }, "Exclude unlikely (edge-case) fingerprints");
 
         rootCommand.AddOption(optionDomain);
         rootCommand.AddOption(optionList);
         rootCommand.AddOption(optionOutput);
         rootCommand.AddOption(optionThreads);
         rootCommand.AddOption(optionVerbose);
+        rootCommand.AddOption(excludeUnlikely);
 
-        rootCommand.SetHandler(async (string domain, string domainsFile, string outputFile, int threads, bool verbose) =>
+        rootCommand.SetHandler(async (string domain, string domainsFile, string outputFile, int threads, bool verbose, bool excludeUnlikely) =>
         {
             var options = new Options
             {
@@ -32,23 +34,24 @@ public class Program
                 DomainsFile = domainsFile,
                 OutputFile = outputFile,
                 Threads = threads,
-                Verbose = verbose
+                Verbose = verbose,
+                ExcludeUnlikely = excludeUnlikely
             };
             await RunSubdominator(options);
-        }, optionDomain, optionList, optionOutput, optionThreads, optionVerbose);
+        }, optionDomain, optionList, optionOutput, optionThreads, optionVerbose, excludeUnlikely);
 
         // Parse the incoming args and invoke the handler
         await rootCommand.InvokeAsync(args);
     }
 
-    static async Task RunSubdominator(Options o)
+    public static async Task RunSubdominator(Options o)
     {
         // Get domain(s) from the options
         var rawDomains = new List<string>();
         if (!string.IsNullOrEmpty(o.DomainsFile))
         {
             string file = o.DomainsFile;
-            rawDomains = (await File.ReadAllLinesAsync(file)).ToList();
+            rawDomains = [.. (await File.ReadAllLinesAsync(file))];
         }
         else if (!string.IsNullOrEmpty(o.Domain))
         {
@@ -69,14 +72,14 @@ public class Program
 
         // Pre-load fingerprints to memory
         var hijackChecker = new SubdomainHijack();
-        await hijackChecker.GetFingerprintsAsync();
+        await hijackChecker.GetFingerprintsAsync(o.ExcludeUnlikely);
 
         // Do the things
         var stopwatch = new Stopwatch();
         stopwatch.Start();
 
         int completedTasks = 0;
-        var updateInterval = TimeSpan.FromSeconds(10);
+        var updateInterval = TimeSpan.FromSeconds(30);
 
         using var cts = new CancellationTokenSource();
         var updateTask = PeriodicUpdateAsync(updateInterval, () =>

@@ -124,7 +124,7 @@ public class SubdomainHijack
         _domainParser = new DomainParser(new WebTldRuleProvider("https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Subdominator/public_suffix_list.dat"));
     }
 
-    public async Task<IEnumerable<Fingerprint>> GetFingerprintsAsync(bool update = false)
+    public async Task<IEnumerable<Fingerprint>> GetFingerprintsAsync(bool excludeUnlikely, bool update = false)
     {
         // Don't reload if they're already cached in memory
         if (_fingerprints.Count == 0)
@@ -211,16 +211,26 @@ public class SubdomainHijack
                     // Now ignore any non-vulnerable fingerprints
                     if (fingerprint.Status.ToLower() != "not vulnerable")
                     {
-                        _fingerprints.Add(fingerprint);
+                        // Filter edge cases if requested
+                        if(!(excludeUnlikely && fingerprint.Status.ToLower() == "edge case"))
+                        {
+                            _fingerprints.Add(fingerprint);
+                        }
                     }
                 }
 
                 // Now iterate custom fingerprints. The custom list is used for completeness, so it should not override the original
                 foreach(var fingerprint in customFingerprints)
                 {
-                    if (fingerprint.Status.ToLower() != "not vulnerable" && !_fingerprints.Any(f => f.Service.ToLower() == fingerprint.Service.ToLower()))
+                    if (fingerprint.Status.ToLower() != "not vulnerable" && 
+                        !_fingerprints.Any(f => f.Service.ToLower() == fingerprint.Service.ToLower())
+                    )
                     {
-                        _fingerprints.Add(fingerprint);
+                        // Filter edge cases if requested
+                        if (!(excludeUnlikely && fingerprint.Status.ToLower() == "edge case"))
+                        {
+                            _fingerprints.Add(fingerprint);
+                        }
                     }
                 }
             }
@@ -465,7 +475,7 @@ public class SubdomainHijack
 
             return isRegistered;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return true;
         }

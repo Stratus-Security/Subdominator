@@ -13,7 +13,7 @@ public class FingerprintTests
     public async Task Setup()
     {
         _subdomainHijack = new SubdomainHijack();
-        _fingerprints = await _subdomainHijack.GetFingerprintsAsync();
+        _fingerprints = await _subdomainHijack.GetFingerprintsAsync(false);
     }
 
     [TestMethod]
