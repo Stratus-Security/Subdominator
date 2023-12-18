@@ -301,7 +301,7 @@ public class SubdomainHijack
                     A = subdomainDns.A,
                     AAAA =  subdomainDns.AAAA,
                     MatchedLocation = MatchedLocation.DomainAvailable,
-                    MatchedRecord = MatchedRecord.None
+                    MatchedRecord = MatchedRecord.CNAME
                 };
             }
         }

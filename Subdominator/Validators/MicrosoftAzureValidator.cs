@@ -3,8 +3,6 @@ using Azure.ResourceManager.TrafficManager;
 using Azure.ResourceManager.TrafficManager.Models;
 using Azure.ResourceManager.AppService;
 using Azure.ResourceManager.AppService.Models;
-using Azure.ResourceManager.Cdn;
-using Azure.ResourceManager.Cdn.Models;
 using Azure.ResourceManager;
 using Azure.ResourceManager.Resources;
 using Azure.Core;
@@ -13,6 +11,26 @@ namespace Subdominator.Validators;
 
 public class MicrosoftAzureValidator : IValidator
 {
+    private readonly SubscriptionResource _subscription;
+
+    public MicrosoftAzureValidator()
+    {
+        TokenCredential credential = new DefaultAzureCredential();
+        var armClient = new ArmClient(credential);
+
+        try
+        {
+            _subscription = armClient.GetDefaultSubscription();
+        }
+        catch
+        {
+            // Fall back to manual login if no creds are found
+            credential = new InteractiveBrowserCredential();
+            armClient = new ArmClient(credential);
+            _subscription = armClient.GetDefaultSubscription();
+        }
+    }
+
     public async Task<bool?> Execute(IEnumerable<string> cnames)
     {
         var isChecked = false;
@@ -81,28 +99,12 @@ public class MicrosoftAzureValidator : IValidator
 
     private async Task<bool> CheckAzureWebsitesNet(string cname)
     {
-        TokenCredential credential = new DefaultAzureCredential();
-        var armClient = new ArmClient(credential);
-        SubscriptionResource subscription;
-
-        try
-        {
-            subscription = await armClient.GetDefaultSubscriptionAsync();
-        }
-        catch
-        {
-            // Fall back to manual login if no creds are found
-            credential = new InteractiveBrowserCredential();
-            armClient = new ArmClient(credential);
-            subscription = await armClient.GetDefaultSubscriptionAsync();
-        }
-
         // We might end up with things like *.privatelink.azurewebsites.net or *.scm
         // They are linked to *.azurewebsites.net so we don't need to check the whole thing
         var resourceName = cname.Split('.')[0];
         var resourceType = CheckNameResourceType.MicrosoftWebSites;
         //TODO: Do we need to manage app service slots?
-        var result = await subscription.CheckAppServiceNameAvailabilityAsync(new ResourceNameAvailabilityContent(resourceName, resourceType));
+        var result = await _subscription.CheckAppServiceNameAvailabilityAsync(new ResourceNameAvailabilityContent(resourceName, resourceType));
 
         return result.Value.IsNameAvailable ?? false;
     }
@@ -114,28 +116,12 @@ public class MicrosoftAzureValidator : IValidator
 
     private async Task<bool> CheckTrafficManagerNet(string cname)
     {
-        TokenCredential credential = new DefaultAzureCredential();
-        var armClient = new ArmClient(credential);
-        SubscriptionResource subscription;
-
-        try
-        {
-            subscription = await armClient.GetDefaultSubscriptionAsync();
-        }
-        catch
-        {
-            // Fall back to manual login if no creds are found
-            credential = new InteractiveBrowserCredential();
-            armClient = new ArmClient(credential);
-            subscription = await armClient.GetDefaultSubscriptionAsync();
-        }
-
-        TrafficManagerRelativeDnsNameAvailabilityContent content = new TrafficManagerRelativeDnsNameAvailabilityContent()
+        var content = new TrafficManagerRelativeDnsNameAvailabilityContent()
         {
             Name = cname.Split('.')[0],
             ResourceType = new ResourceType("microsoft.network/trafficmanagerprofiles"),
         };
-        var result = await subscription.CheckTrafficManagerNameAvailabilityV2Async(content);
+        var result = await _subscription.CheckTrafficManagerNameAvailabilityV2Async(content);
 
         return result.Value.IsNameAvailable ?? false;
     }

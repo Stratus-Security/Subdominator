@@ -182,7 +182,27 @@ public class Program
                 var fingerPrintName = result.Fingerprint == null ? "-" : result.Fingerprint.Service;
 
                 // Build the output string
-                var output = $"{(result.IsVerified ? "✅ " : "")}[{fingerPrintName}] {domain} - CNAME: {string.Join(", ", result.CNAMES)}";
+                var output = $"{(result.IsVerified ? "✅ " : "")}[{fingerPrintName}] {domain} - CNAME: {string.Join(", ", result.CNAMES ?? [])}";
+
+                // Show where we matched the takeover
+                var locationString = "";
+                if(result.MatchedRecord == MatchedRecord.CNAME)
+                {
+                    if(result.MatchedLocation != MatchedLocation.DomainAvailable ||
+                        (result.MatchedLocation == MatchedLocation.DomainAvailable && result.CNAMES?.Any() == true)
+                    )
+                    {
+                        locationString = $" - CNAME: {string.Join(", ", result.CNAMES ?? [])}";
+                    }
+                }
+                else if(result.MatchedRecord == MatchedRecord.A)
+                {
+                    locationString = $" - A: {string.Join(", ", result.A ?? [])}";
+                }
+                else if (result.MatchedRecord == MatchedRecord.AAAA)
+                {
+                    locationString = $" - AAAA: {string.Join(", ", result.AAAA ?? [])}";
+                }
 
                 // Thread-safe console print and append to results file
                 lock (_fileLock)
@@ -191,11 +211,11 @@ public class Program
                     Console.ForegroundColor = result.IsVulnerable ? ConsoleColor.Red : ConsoleColor.Green;
                     Console.Write(fingerPrintName);
                     Console.ResetColor();
-                    Console.Write($"] {domain} - CNAME: {string.Join(", ", result.CNAMES)}" + Environment.NewLine);
+                    Console.Write($"] {domain}" + locationString + Environment.NewLine);
 
                     if (!string.IsNullOrWhiteSpace(outputFile))
                     {
-                        File.AppendAllText(outputFile, output + Environment.NewLine);
+                        File.AppendAllText(outputFile, output + locationString + Environment.NewLine);
                     }
                 }
             }

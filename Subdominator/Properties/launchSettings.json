@@ -2,7 +2,7 @@
   "profiles": {
     "Subdominator": {
       "commandName": "Project",
-      "commandLineArgs": "-l subs.txt"
+      "commandLineArgs": "-l subs.txt --validate -eu"
     }
   }
 }
