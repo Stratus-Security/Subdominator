@@ -27,12 +27,15 @@ Subdominator.exe -d sub.example.com
 
 ## Options 🎛️
 ```
--d, --domain     A single domain to check
--l, --list       A list of domains to check (line delimited)
--o, --output     Output subdomains to a file
--t, --threads    (Default: 50) Number of domains to check at once
--v, --verbose    Print extra information
---help           Display this help screen.
+-d, --domain <domain>    A single domain to check
+-l, --list <list>        A list of domains to check (line delimited)
+-o, --output <output>    Output subdomains to a file
+-t, --threads <threads>  Number of domains to check at once [default: 50]
+-v, --verbose            Print extra information
+-eu, --exclude-unlikely  Exclude unlikely (edge-case) fingerprints
+--validate               Validate the takeovers are exploitable (where possible)
+--version                Show version information
+-?, -h, --help           Show help and usage information
 ```
 
 ## Demo
@@ -55,6 +58,7 @@ A benchmark was run across ~100,000 subdomains to compare performance with other
 - **High-Speed Performance**: Achieves faster results through intelligent DNS record matching.
 - **Vetted Ruleset**: Includes a thoroughly reviewed and updated ruleset.
 - **Comprehensive Detection**: Capable of identifying takeovers missed by other tools.
+- **Validation**: Dynamic takeover validation modules to check beyond fingerprints.
 
 ## Feature Comparison 🥊
 | Feature                          | Subdominator | Subjack | Subdover |
@@ -67,6 +71,7 @@ A benchmark was run across ~100,000 subdomains to compare performance with other
 | Vetted and Updated Ruleset       | ✅          | ❌      | ❌       |
 | Comprehensive Detection          | ✅          | ❌      | ❌       |
 | Custom Fingerprint Support       | ✅          | ✅      | ❌       |
+| Validation                       | ✅          | ❌      | ❌       |
 | Fingerprints                     | 97           | 35      | 80       |
 
 ## Contributions
