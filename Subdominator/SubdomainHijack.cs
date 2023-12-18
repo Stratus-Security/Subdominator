@@ -1,6 +1,7 @@
 ﻿using DnsClient;
 using Nager.PublicSuffix;
 using Subdominator.Models;
+using Subdominator.Utils;
 using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
@@ -42,7 +43,7 @@ public class SubdomainHijack
         { "Ngrok", new(){ "ngrok.io not found" } },
         { "Wordpress", new(){ "Do you want to register " } }
     };
-    
+
     // Extra cnames
     private Dictionary<string, List<string>> _cnameOverrides = new()
     {        
@@ -74,7 +75,20 @@ public class SubdomainHijack
         { "UserVoice", new(){ "uservoice.com" } },
         { "Webflow", new(){ "proxy.webflow.com", "proxy-ssl.webflow.com" } },
         { "Wix", new(){ "wixdns.net" } },
-        { "Vercel", new(){ ".vercel.com", "cname.vercel-dns.com" } }
+        { "Vercel", new(){ ".vercel.com", "cname.vercel-dns.com" } },
+        { "AWS/S3", new(){
+            ".s3-accelerate.amazonaws.com",
+            ".s3-accelerate.dualstack.amazonaws.com",
+            ".s3-website-<region>.amazonaws.com",
+            ".s3.<region>.amazonaws.com",
+        }}
+    };
+    readonly List<string> awsRegions = new() {
+        "us-east-1","us-east-2","us-west-1","us-west-2","af-south-1","ap-east-1","ap-south-1",
+        "ap-northeast-3","ap-northeast-2", "ap-southeast-1","ap-southeast-2","ap-northeast-1",
+        "ca-central-1","eu-central-1","eu-west-1","eu-west-2","eu-south-1","eu-west-3",
+        "eu-north-1","me-south-1","sa-east-1","cn-north-1","cn-northwest-1",
+        "gov-west-1","gov-east-1"
     };
 
     // At what point to I just make my own master list???
@@ -121,7 +135,7 @@ public class SubdomainHijack
 
         _dnsClient = new LookupClient();
 
-        _domainParser = new DomainParser(new WebTldRuleProvider("https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Subdominator/public_suffix_list.dat"));
+        _domainParser = new DomainParser(new WebTldRuleProvider("https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Subdominator/public_suffix_list.dat", new FileCacheProvider(cacheTimeToLive: TimeSpan.FromSeconds(0))));
     }
 
     public async Task<IEnumerable<Fingerprint>> GetFingerprintsAsync(bool excludeUnlikely, bool update = false)
@@ -189,7 +203,30 @@ public class SubdomainHijack
                     // Some of the cnames are missing so we fix
                     if (_cnameOverrides.ContainsKey(fingerprint.Service))
                     {
-                        fingerprint.Cnames.AddRange(_cnameOverrides[fingerprint.Service]);
+                        var overrides = _cnameOverrides[fingerprint.Service];
+
+                        // Populate with AWS regions
+                        if (fingerprint.Service == "AWS/S3")
+                        {
+                            foreach (var endpoint in overrides)
+                            {
+                                if (endpoint.Contains("<region>"))
+                                {
+                                    foreach (var region in awsRegions)
+                                    {
+                                        fingerprint.Cnames.Add(endpoint.Replace("<region>", region));
+                                    }
+                                }
+                                else
+                                {
+                                    fingerprint.Cnames.Add(endpoint);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            fingerprint.Cnames.AddRange(overrides);
+                        }
                     }
 
                     // Some nxdomain flags are wrong too ._.
@@ -243,7 +280,7 @@ public class SubdomainHijack
         return _fingerprints;
     }
 
-    public async Task<(bool, Fingerprint?, List<string>? cnames)> IsDomainVulnerable(string domain, bool update = false)
+    public async Task<TakeoverResult> IsDomainVulnerable(string domain, bool validateResults, bool update = false)
     {
         var fingerprints = await GetFingerprintsAsync(update);
 
@@ -256,28 +293,104 @@ public class SubdomainHijack
             // Check if the domain is registered
             if (subdomainDns.IsDomainRegistered == false)
             {
-                return (true, new Fingerprint() { Service = "Domain Available" }, subdomainDns.Cnames);
+                return new TakeoverResult()
+                {
+                    IsVulnerable = true,
+                    Fingerprint = new Fingerprint() { Service = "Domain Available" },
+                    CNAMES = subdomainDns.Cnames,
+                    A = subdomainDns.A,
+                    AAAA =  subdomainDns.AAAA,
+                    MatchedLocation = MatchedLocation.DomainAvailable,
+                    MatchedRecord = MatchedRecord.None
+                };
             }
         }
 
         // Now check all the fingerprints
         foreach (var fingerprint in fingerprints)
         {
-            if (await IsFingerprintVulnerable(fingerprint, subdomainDns, domain))
+            var result = await IsFingerprintVulnerable(fingerprint, subdomainDns, domain);
+            bool isVerified = false;
+
+            if (result.Item1)
             {
-                return (true, fingerprint, subdomainDns.Cnames);
+                // If we're validating results, we need to get a bit fancy
+                if (validateResults)
+                {
+                    try
+                    {
+                        // Check for any validator, it's a bit of reflected voodoo to strictly scope and maintain AoT compat
+                        var validator = ValidatorUtils.GetValidatorInstance(fingerprint.Service.Replace(" ", "").Replace("/", ""));
+                        if (validator != null)
+                        {
+                            var isAvailable = await validator.Execute(subdomainDns.Cnames);
+                            if (isAvailable.HasValue)
+                            {
+                                if (isAvailable.Value)
+                                {
+                                    // Successfully verified!
+                                    isVerified = true;
+                                }
+                                else
+                                {
+                                    // Validation shows this isn't really vulnerable
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // There's a bunch that can go wrong (e.g. no creds) but we can't always get them
+                    }
+                }
+
+                return new TakeoverResult()
+                {
+                    IsVulnerable = true,
+                    IsVerified = isVerified,
+                    Fingerprint = fingerprint,
+                    CNAMES = subdomainDns.Cnames,
+                    A = subdomainDns.A,
+                    AAAA = subdomainDns.AAAA,
+                    MatchedRecord = result.Item2,
+                    MatchedLocation = result.Item3
+                };
             }
         }
 
-        return (false, null, subdomainDns.Cnames);
+        return new TakeoverResult()
+        {
+            IsVulnerable = false,
+            Fingerprint = null,
+            CNAMES = subdomainDns.Cnames,
+            A = subdomainDns.A,
+            AAAA = subdomainDns.AAAA,
+            MatchedRecord = MatchedRecord.None,
+            MatchedLocation = MatchedLocation.None,
+        };
     }
 
-    // TODO: Return why records are vulnerable and what record matched
-    public async Task<bool> IsFingerprintVulnerable(Fingerprint fingerprint, CnameResolutionResult dns, string domain)
+    // Check an individual fingerprint against and domain name and dns records
+    public async Task<(bool, MatchedRecord, MatchedLocation)> IsFingerprintVulnerable(Fingerprint fingerprint, CnameResolutionResult dns, string domain)
     {
         var isCnameMatch = dns.Cnames.Any(r => fingerprint.Cnames.Any(r.Contains));
         var isAMatch = dns.A.Any(r => fingerprint.ARecords.Any(r.Contains));
         var isAaaaMatch = dns.AAAA.Any(r => fingerprint.AAAARecords.Any(r.Contains));
+
+        var matchedRecord = MatchedRecord.None;
+        if (isCnameMatch)
+        {
+            matchedRecord = MatchedRecord.CNAME;
+        }
+        else if (isAMatch)
+        {
+            matchedRecord = MatchedRecord.A;
+        }
+        else if (isAaaaMatch)
+        {
+            matchedRecord = MatchedRecord.AAAA;
+        }
 
         // If we expected nxdomain, check the cname matches
         if (dns.IsNxdomain && fingerprint.Nxdomain)
@@ -286,7 +399,7 @@ public class SubdomainHijack
             // Note this is a loose match (hence contains) to remove the need for regexes
             if (isCnameMatch || isAMatch || isAaaaMatch)
             {
-                return true;
+                return (true, matchedRecord, MatchedLocation.NXDomain);
             }
         }
 
@@ -304,7 +417,7 @@ public class SubdomainHijack
                 // Check if HTTP status matches the fingerprint
                 if (fingerprint.HttpStatus.HasValue && (int)response.StatusCode == fingerprint.HttpStatus.Value)
                 {
-                    return true;
+                    return (true, matchedRecord, MatchedLocation.HttpStatus);
                 }
 
                 // Check response content is available and matches
@@ -314,14 +427,14 @@ public class SubdomainHijack
                     {
                         if (!string.IsNullOrWhiteSpace(fingerprintMatch) && responseBody.Contains(fingerprintMatch))
                         {
-                            return true;
+                            return (true, matchedRecord, MatchedLocation.HttpBody);
                         }
                     }
                 }
             }
         }
 
-        return false;
+        return (false, matchedRecord, MatchedLocation.None);
     }
 
     public async Task<CnameResolutionResult> GetDnsForSubdomain(string domain)

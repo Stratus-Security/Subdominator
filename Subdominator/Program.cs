@@ -1,6 +1,8 @@
 ﻿using Nager.PublicSuffix;
 using System.Diagnostics;
 using System.CommandLine;
+using Subdominator.Models;
+using System.Text;
 
 namespace Subdominator;
 
@@ -10,6 +12,8 @@ public class Program
 
     public static async Task Main(string[] args)
     {
+        Console.OutputEncoding = Encoding.UTF8;
+
         var rootCommand = new RootCommand("A subdomain takover detection tool for cool kids");
 
         var optionDomain = new Option<string>(new[] { "-d", "--domain" }, "A single domain to check");
@@ -17,16 +21,18 @@ public class Program
         var optionOutput = new Option<string>(new[] { "-o", "--output" }, "Output subdomains to a file");
         var optionThreads = new Option<int>(new[] { "-t", "--threads" }, () => 50, "Number of domains to check at once");
         var optionVerbose = new Option<bool>(new[] { "-v", "--verbose" }, "Print extra information");
-        var excludeUnlikely = new Option<bool>(new[] { "-eu", "--exclude-unlikely" }, "Exclude unlikely (edge-case) fingerprints");
+        var optionExcludeUnlikely = new Option<bool>(new[] { "-eu", "--exclude-unlikely" }, "Exclude unlikely (edge-case) fingerprints");
+        var optionValidate = new Option<bool>(new[] { "--validate" }, "Validate the takeovers are exploitable (where possible)");
 
         rootCommand.AddOption(optionDomain);
         rootCommand.AddOption(optionList);
         rootCommand.AddOption(optionOutput);
         rootCommand.AddOption(optionThreads);
         rootCommand.AddOption(optionVerbose);
-        rootCommand.AddOption(excludeUnlikely);
+        rootCommand.AddOption(optionExcludeUnlikely);
+        rootCommand.AddOption(optionValidate);
 
-        rootCommand.SetHandler(async (string domain, string domainsFile, string outputFile, int threads, bool verbose, bool excludeUnlikely) =>
+        rootCommand.SetHandler(async (string domain, string domainsFile, string outputFile, int threads, bool verbose, bool excludeUnlikely, bool validate) =>
         {
             var options = new Options
             {
@@ -35,10 +41,11 @@ public class Program
                 OutputFile = outputFile,
                 Threads = threads,
                 Verbose = verbose,
-                ExcludeUnlikely = excludeUnlikely
+                ExcludeUnlikely = excludeUnlikely,
+                Validate = validate
             };
             await RunSubdominator(options);
-        }, optionDomain, optionList, optionOutput, optionThreads, optionVerbose, excludeUnlikely);
+        }, optionDomain, optionList, optionOutput, optionThreads, optionVerbose, optionExcludeUnlikely, optionValidate);
 
         // Parse the incoming args and invoke the handler
         await rootCommand.InvokeAsync(args);
@@ -79,7 +86,7 @@ public class Program
         stopwatch.Start();
 
         int completedTasks = 0;
-        var updateInterval = TimeSpan.FromSeconds(30);
+        var updateInterval = TimeSpan.FromSeconds(60);
 
         using var cts = new CancellationTokenSource();
         var updateTask = PeriodicUpdateAsync(updateInterval, () =>
@@ -95,7 +102,7 @@ public class Program
 
         await Parallel.ForEachAsync(domains, new ParallelOptions { MaxDegreeOfParallelism = maxConcurrentTasks }, async (domain, cancellationToken) =>
         {
-            var isVulnerable = await CheckAndLogDomain(hijackChecker, domain, o.OutputFile, verbose);
+            var isVulnerable = await CheckAndLogDomain(hijackChecker, domain, o.OutputFile, o.Validate, verbose);
             if(isVulnerable)
             {
                 isAnyVulnerable = true;
@@ -138,7 +145,7 @@ public class Program
 
     static IEnumerable<string> FilterAndNormalizeDomains(List<string> domains, bool verbose = false)
     {
-        var domainParser = new DomainParser(new WebTldRuleProvider("https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Subdominator/public_suffix_list.dat"));
+        var domainParser = new DomainParser(new WebTldRuleProvider("https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Subdominator/public_suffix_list.dat", new FileCacheProvider(cacheTimeToLive: TimeSpan.FromSeconds(0))));
 
         // Normalize domains and check validity
         var normalizedDomains = domains
@@ -160,31 +167,31 @@ public class Program
         return normalizedDomains.Where(d => d.IsValid).Select(d => d.Original);
     }
 
-    static async Task<bool> CheckAndLogDomain(SubdomainHijack hijackChecker, string domain, string outputFile, bool verbose = false)
+    static async Task<bool> CheckAndLogDomain(SubdomainHijack hijackChecker, string domain, string outputFile, bool validateResults, bool verbose = false)
     {
         bool isFound = false;
         try
         {
-            var (isVulnerable, fingerprint, cnames) = await hijackChecker.IsDomainVulnerable(domain);
-            if (isVulnerable || verbose)
+            var result = await hijackChecker.IsDomainVulnerable(domain, validateResults);
+            if (result.IsVulnerable || verbose)
             {
-                if (isVulnerable)
+                if (result.IsVulnerable)
                 {
                     isFound = true;
                 }
-                var fingerPrintName = fingerprint == null ? "-" : fingerprint.Service;
+                var fingerPrintName = result.Fingerprint == null ? "-" : result.Fingerprint.Service;
 
                 // Build the output string
-                var output = $"[{fingerPrintName}] {domain} - CNAME: {string.Join(", ", cnames)}";
+                var output = $"{(result.IsVerified ? "✅ " : "")}[{fingerPrintName}] {domain} - CNAME: {string.Join(", ", result.CNAMES)}";
 
                 // Thread-safe console print and append to results file
                 lock (_fileLock)
                 {
-                    Console.Write("[");
-                    Console.ForegroundColor = isVulnerable ? ConsoleColor.Red : ConsoleColor.Green;
+                    Console.Write($"{(result.IsVerified ? "✅ " : "")}[");
+                    Console.ForegroundColor = result.IsVulnerable ? ConsoleColor.Red : ConsoleColor.Green;
                     Console.Write(fingerPrintName);
                     Console.ResetColor();
-                    Console.Write($"] {domain} - CNAME: {string.Join(", ", cnames)}" + Environment.NewLine);
+                    Console.Write($"] {domain} - CNAME: {string.Join(", ", result.CNAMES)}" + Environment.NewLine);
 
                     if (!string.IsNullOrWhiteSpace(outputFile))
                     {

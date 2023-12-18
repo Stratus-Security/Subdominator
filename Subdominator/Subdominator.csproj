@@ -9,9 +9,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AWSSDK.Core" Version="3.7.300.20" />
+    <PackageReference Include="AWSSDK.ElasticBeanstalk" Version="3.7.300.20" />
+    <PackageReference Include="Azure.Identity" Version="1.10.4" />
+    <PackageReference Include="Azure.ResourceManager.AppService" Version="1.0.2" />
+    <PackageReference Include="Azure.ResourceManager.Cdn" Version="1.2.0" />
+    <PackageReference Include="Azure.ResourceManager.Compute" Version="1.2.1" />
+    <PackageReference Include="Azure.ResourceManager.Dns" Version="1.1.0" />
+    <PackageReference Include="Azure.ResourceManager.TrafficManager" Version="1.1.1" />
     <PackageReference Include="DnsClient" Version="1.7.0" />
     <PackageReference Include="Nager.PublicSuffix" Version="2.4.0" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
     <PackageReference Include="Whois" Version="3.0.1" />
   </ItemGroup>
 
