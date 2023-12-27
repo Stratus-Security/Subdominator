@@ -76,3 +76,108 @@ A benchmark was run across ~100,000 subdomains to compare performance with other
 
 ## Contributions
 Got a suggestion, fingerprint, or want to chip in? We're all ears! Open a PR or issue – this will keep subdominator on top! 😄
+
+## Fingerprints 
+The fingerprints and services are dynamically pulled from the [CanITakeOverXYZ repo](https://github.com/EdOverflow/can-i-take-over-xyz) as a source of truth. To fill in the gaps and correct incorrect fingerprints, this tool also has its own [custom fingerprints list](https://github.com/Stratus-Security/Subdominator/blob/master/Subdominator/custom_fingerprints.json) which is used in conjunction.
+
+Here is the current list of services supported:
+| Service | Status |
+|---------|--------|
+| Acquia | Edge case |
+| ActiveCampaign | Vulnerable |
+| Aftership | Vulnerable |
+| Agile CRM | Vulnerable |
+| Aha | Vulnerable |
+| Airee.ru | Vulnerable |
+| Amazon Cognito | Vulnerable |
+| Anima | Vulnerable |
+| Announcekit | Vulnerable |
+| Apigee | Vulnerable |
+| Appery.io | Vulnerable |
+| AWS/Elastic Beanstalk | Vulnerable |
+| AWS/S3 | Vulnerable |
+| Better Uptime | Vulnerable |
+| BigCartel | Vulnerable |
+| Bitbucket | Vulnerable |
+| Branch.io | Vulnerable |
+| Brandpad | Vulnerable |
+| Brightcove | Vulnerable |
+| Bubble.io | Vulnerable |
+| Campaign Monitor | Vulnerable |
+| Canny | Vulnerable |
+| Cargo Collective | Vulnerable |
+| ConvertKit | Vulnerable |
+| DatoCMS.com | Vulnerable |
+| Digital Ocean | Vulnerable |
+| Discourse | Vulnerable |
+| EasyRedir | Vulnerable |
+| Fastly | Edge case |
+| Flexbe | Edge Case |
+| Flywheel | Vulnerable |
+| Frontify | Edge case |
+| Gemfury | Vulnerable |
+| GetCloudApp | Vulnerable |
+| Getresponse | Vulnerable |
+| Ghost | Vulnerable |
+| Gitbook | Vulnerable |
+| Github | Edge case |
+| HatenaBlog | Vulnerable |
+| Help Juice | Vulnerable |
+| Help Scout | Vulnerable |
+| Helprace | Vulnerable |
+| Heroku | Edge case |
+| Instapage | Edge case |
+| Intercom | Edge case |
+| JazzHR | Edge Case |
+| JetBrains | Vulnerable |
+| Kajabi | Vulnerable |
+| Landingi | Edge case |
+| LaunchRock | Vulnerable |
+| LeadPages.com | Vulnerable |
+| Mashery | Edge case |
+| Meteor Cloud (Galaxy) | Vulnerable |
+| Microsoft Azure | Vulnerable |
+| Netlify | Edge case |
+| Ngrok | Vulnerable |
+| Pagewiz | Vulnerable |
+| Pantheon | Vulnerable |
+| Pingdom | Vulnerable |
+| Proposify | Vulnerable |
+| Readme.io | Vulnerable |
+| Readthedocs | Vulnerable |
+| Refined | Vulnerable |
+| Shopify | Edge case |
+| Short.io | Vulnerable |
+| SimpleBooklet | Vulnerable |
+| SmartJobBoard | Vulnerable |
+| Smartling | Edge case |
+| Smugsmug | Vulnerable |
+| Softr | Vulnerable |
+| Sprintful | Vulnerable |
+| Strikingly | Vulnerable |
+| Surge.sh | Vulnerable |
+| Surveygizmo | Vulnerable |
+| SurveySparrow | Vulnerable |
+| Tave | Vulnerable |
+| Teamwork | Vulnerable |
+| Thinkific | Vulnerable |
+| Tictail | Vulnerable |
+| Tilda | Edge case |
+| Tribe | Vulnerable |
+| Tumblr | Edge case |
+| Uberflip | Vulnerable |
+| Unbounce | Edge case |
+| Uptimerobot | Vulnerable |
+| UseResponse | Vulnerable |
+| UserVoice | Edge case |
+| Vend | Vulnerable |
+| Vercel | Edge case |
+| Webflow | Edge case |
+| Wishpond | Vulnerable |
+| Wix | Edge case |
+| Wordpress | Vulnerable |
+| Worksites | Vulnerable |
+| Wufoo | Vulnerable |
+| Zendesk | Edge case |
+| Zoho Forms | Vulnerable |
+| Zoho Forms India | Vulnerable |

@@ -200,6 +200,12 @@ public class CoverageTests
         {
             Console.WriteLine("Subdominator has complete coverage!");
         }
+
+        // Print a list of fingerprints for the readme
+        foreach (var fingerprint in myFingerprints.OrderBy(s => s.Service))
+        {
+            Console.WriteLine($"| {fingerprint.Service} | {fingerprint.Status} |");
+        }
     }
 
     private async Task<List<Fingerprint>> GetCanITakeOverXyzFingerprints()
