@@ -80,7 +80,7 @@ Got a suggestion, fingerprint, or want to chip in? We're all ears! Open a PR or 
 ## Fingerprints 
 The fingerprints and services are dynamically pulled from the [CanITakeOverXYZ repo](https://github.com/EdOverflow/can-i-take-over-xyz) as a source of truth. To fill in the gaps and correct incorrect fingerprints, this tool also has its own [custom fingerprints list](https://github.com/Stratus-Security/Subdominator/blob/master/Subdominator/custom_fingerprints.json) which is used in conjunction.
 
-Here is the current list of services supported:
+Below is the current list of services supported, to ignore edge cases use the `-eu` flag.
 | Service | Status |
 |---------|--------|
 | Acquia | Edge case |
