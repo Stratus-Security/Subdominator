@@ -38,8 +38,35 @@ Subdominator.exe -d sub.example.com
 -?, -h, --help           Show help and usage information
 ```
 
+## Output
+There will be a periodic progress updates to the CLI, additionally output for vulnerable domains is indicated as shown below.
+
+By default, only vulnerable domains will be printed or saved to the file along with the vulnerable DNS record(s).
+The output format is as follows:
+```
+[Service Name] vulnerable.domain.com - RecordType: dns.record.com
+```
+
+For example, a vulnerable Azure CDN takeover will look like this:
+```
+[Microsoft Azure] example.stratussecurity.com - CNAME: stratus-cdn-stg.azureedge.net
+``` 
+
+If you use the verbose flag, it will print all domains checked. 
+For example, this shows the same vulnerable domain and another non-vulnerable domain indicated by [-]:
+```
+[Microsoft Azure] example.stratussecurity.com - CNAME: stratus-cdn-stg.azureedge.net
+[-] www.stratussecurity.com
+```
+
+Finally, if a domain is vulnerable and passes validation with the --validation flag, it will be prepended with a ✅.
+These domains have been validated to be vulnerable with the services directly, not just the fingerprint. For example:
+```
+✅ [Microsoft Azure] example.stratussecurity.com - CNAME: stratus-cdn-stg.azureedge.net
+```
+
 ## Demo
-The tool was run across 1000 passively gathered subdomains:
+The tool running across 1000 passively gathered subdomains:
 ![Demo](https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Demo.gif)
 
 ## Benchmark 📊

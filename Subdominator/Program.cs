@@ -72,7 +72,7 @@ public class Program
         // Define maximum concurrent tasks
         int maxConcurrentTasks = o.Threads;
         bool verbose = o.Verbose;
-        bool isAnyVulnerable = false;
+        var vulnerableCount = 0;
 
         // Pre-check domains passed in and filter any that are invalid
         var domains = FilterAndNormalizeDomains(rawDomains);
@@ -105,7 +105,7 @@ public class Program
             var isVulnerable = await CheckAndLogDomain(hijackChecker, domain, o.OutputFile, o.Validate, verbose);
             if(isVulnerable)
             {
-                isAnyVulnerable = true;
+                Interlocked.Increment(ref vulnerableCount);
             }
             Interlocked.Increment(ref completedTasks);
         });
@@ -118,10 +118,10 @@ public class Program
         var elapsed = stopwatch.Elapsed;
         var rate = completedTasks / elapsed.TotalSeconds;
         Console.WriteLine($"{completedTasks}/{domains.Count()} domains processed. Average rate: {rate:F2} domains/sec");
-        Console.WriteLine("Done in " + stopwatch.Elapsed.TotalSeconds + "s");
+        Console.WriteLine($"Done in {stopwatch.Elapsed.TotalSeconds:N2}s! Subdominator found {vulnerableCount} vulnerable domains.");
 
         // Exit non-zero if we have a takeover, for the DevOps folks
-        if (isAnyVulnerable)
+        if (vulnerableCount > 0)
         {
             Environment.ExitCode = 1;
         }
