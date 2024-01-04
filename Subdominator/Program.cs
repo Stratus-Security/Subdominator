@@ -66,7 +66,10 @@ public class Program
         }
         else
         {
-            throw new Exception("A domain (-d) or file (-l) must be specified.");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("A domain (-d) or file (-l) must be specified!");
+            Console.ResetColor();
+            return;
         }
 
         // Define maximum concurrent tasks
@@ -154,13 +157,12 @@ public class Program
             .ToList();
 
         // Count and report removed domains
-        if (verbose)
+        var removedDomains = normalizedDomains.Count(d => !d.IsValid);
+        if (removedDomains > 0)
         {
-            var removedDomains = normalizedDomains.Count(d => !d.IsValid);
-            if (removedDomains > 0)
-            {
-                Console.WriteLine($"Removed {removedDomains} invalid domains.");
-            }
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"Removed {removedDomains} invalid domains.");
+            Console.ResetColor();
         }
 
         // Return only valid domains
