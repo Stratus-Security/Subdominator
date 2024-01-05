@@ -146,7 +146,7 @@ public class Program
         }
     }
 
-    static IEnumerable<string> FilterAndNormalizeDomains(List<string> domains, bool verbose = false)
+    static IEnumerable<string> FilterAndNormalizeDomains(List<string> domains)
     {
         var domainParser = new DomainParser(new WebTldRuleProvider("https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Subdominator/public_suffix_list.dat", new FileCacheProvider(cacheTimeToLive: TimeSpan.FromSeconds(0))));
 
