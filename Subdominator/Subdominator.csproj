@@ -17,6 +17,7 @@
     <PackageReference Include="Azure.ResourceManager.Compute" Version="1.2.1" />
     <PackageReference Include="Azure.ResourceManager.Dns" Version="1.1.0" />
     <PackageReference Include="Azure.ResourceManager.TrafficManager" Version="1.1.1" />
+    <PackageReference Include="CsvHelper" Version="30.0.1" />
     <PackageReference Include="DnsClient" Version="1.7.0" />
     <PackageReference Include="Nager.PublicSuffix" Version="2.4.0" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />

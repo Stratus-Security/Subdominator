@@ -3,6 +3,9 @@ using System.Diagnostics;
 using System.CommandLine;
 using Subdominator.Models;
 using System.Text;
+using System.Globalization;
+using CsvHelper;
+using CsvHelper.Configuration;
 
 namespace Subdominator;
 
@@ -22,6 +25,7 @@ public class Program
         var optionThreads = new Option<int>(new[] { "-t", "--threads" }, () => 50, "Number of domains to check at once");
         var optionVerbose = new Option<bool>(new[] { "-v", "--verbose" }, "Print extra information");
         var optionExcludeUnlikely = new Option<bool>(new[] { "-eu", "--exclude-unlikely" }, "Exclude unlikely (edge-case) fingerprints");
+        var optionCsv = new Option<string>(new[] { "-c", "--csv" }, "Heading to parse for CSV file. Forces -l to read as CSV instead of line-delimited");
         var optionValidate = new Option<bool>(new[] { "--validate" }, "Validate the takeovers are exploitable (where possible)");
 
         rootCommand.AddOption(optionDomain);
@@ -31,21 +35,23 @@ public class Program
         rootCommand.AddOption(optionVerbose);
         rootCommand.AddOption(optionExcludeUnlikely);
         rootCommand.AddOption(optionValidate);
+        rootCommand.AddOption(optionCsv);
 
-        rootCommand.SetHandler(async (string domain, string domainsFile, string outputFile, int threads, bool verbose, bool excludeUnlikely, bool validate) =>
+        rootCommand.SetHandler(async (string domain, string domainsFile, string csvHeading, string outputFile, int threads, bool verbose, bool excludeUnlikely, bool validate) =>
         {
             var options = new Options
             {
                 Domain = domain,
                 DomainsFile = domainsFile,
                 OutputFile = outputFile,
+                CsvHeading = csvHeading,
                 Threads = threads,
                 Verbose = verbose,
                 ExcludeUnlikely = excludeUnlikely,
                 Validate = validate
             };
             await RunSubdominator(options);
-        }, optionDomain, optionList, optionOutput, optionThreads, optionVerbose, optionExcludeUnlikely, optionValidate);
+        }, optionDomain, optionList, optionCsv, optionOutput, optionThreads, optionVerbose, optionExcludeUnlikely, optionValidate);
 
         // Parse the incoming args and invoke the handler
         await rootCommand.InvokeAsync(args);
@@ -58,7 +64,36 @@ public class Program
         if (!string.IsNullOrEmpty(o.DomainsFile))
         {
             string file = o.DomainsFile;
-            rawDomains = [.. (await File.ReadAllLinesAsync(file))];
+            if (string.IsNullOrEmpty(o.CsvHeading))
+            {
+                rawDomains = [.. (await File.ReadAllLinesAsync(file))];
+            }
+            else // CSV input
+            {
+                try
+                {
+                    using var reader = new StreamReader(file);
+                    using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+                    var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+                    {
+                        PrepareHeaderForMatch = args => args.Header.Trim(),
+                    };
+                    csv.Read();
+                    csv.ReadHeader();
+                    while (csv.Read())
+                    {
+                        var domain = csv.GetField<string>(o.CsvHeading);
+                        rawDomains.Add(domain);
+                    }
+                }
+                catch (CsvHelper.MissingFieldException)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"The CSV ({file}) is missing the specified heading! ({o.CsvHeading})");
+                    Console.ResetColor();
+                    return;
+                }
+            }
         }
         else if (!string.IsNullOrEmpty(o.Domain))
         {
