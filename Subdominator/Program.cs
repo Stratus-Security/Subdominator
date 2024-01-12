@@ -25,7 +25,7 @@ public class Program
         var optionThreads = new Option<int>(new[] { "-t", "--threads" }, () => 50, "Number of domains to check at once");
         var optionVerbose = new Option<bool>(new[] { "-v", "--verbose" }, "Print extra information");
         var optionExcludeUnlikely = new Option<bool>(new[] { "-eu", "--exclude-unlikely" }, "Exclude unlikely (edge-case) fingerprints");
-        var optionCsv = new Option<string>(new[] { "-c", "--csv" }, "Heading or column number to parse for CSV file. Forces -l to read as CSV instead of line-delimited");
+        var optionCsv = new Option<string>(new[] { "-c", "--csv" }, "Heading or column index to parse for CSV file. Forces -l to read as CSV instead of line-delimited");
         var optionValidate = new Option<bool>(new[] { "--validate" }, "Validate the takeovers are exploitable (where possible)");
 
         rootCommand.AddOption(optionDomain);

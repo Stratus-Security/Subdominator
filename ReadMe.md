@@ -33,7 +33,7 @@ Subdominator.exe -d sub.example.com
 -t, --threads <threads>  Number of domains to check at once [default: 50]
 -v, --verbose            Print extra information
 -eu, --exclude-unlikely  Exclude unlikely (edge-case) fingerprints
--c, --csv <csv>          Heading to parse for CSV file. Forces -l to read as CSV instead of line-delimited
+-c, --csv <csv>          Column index or heading to parse for CSV file. Forces -l to read as CSV instead of line-delimited
 --validate               Validate the takeovers are exploitable (where possible)
 --version                Show version information
 -?, -h, --help           Show help and usage information
