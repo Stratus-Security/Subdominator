@@ -9,11 +9,15 @@ jobs:
     name: Release
     strategy:
       matrix:
-        kind: ['linux', 'windows']
+        kind: ['linux', 'macos', 'windows']
         include:
           - kind: linux
             os: ubuntu-latest
             target: linux-x64
+            ext: ''
+          - kind: macos
+            os: macos
+            target: osx-x64
             ext: ''
           - kind: windows
             os: windows-latest
