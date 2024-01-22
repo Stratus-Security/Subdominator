@@ -1,6 +1,7 @@
 name: "Create Releases"
 
 on:
+  workflow_dispatch:
   release:
     types: [published]
     
