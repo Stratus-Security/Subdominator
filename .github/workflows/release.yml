@@ -35,8 +35,9 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Build
-        run:
+        run: |
           dotnet publish Subdominator/Subdominator.csproj -r "${{ matrix.target }}" -c Release -o "Release-${{ matrix.target }}" -p:UseNativeAot=true
+          mv "Release-${{ matrix.target }}/Subdominator" "Release-${{ matrix.target }}/Subdominator-${{ matrix.kind }}"
 
       - name: Release
         uses: softprops/action-gh-release@v1
