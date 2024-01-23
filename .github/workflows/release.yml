@@ -37,12 +37,15 @@ jobs:
       - name: Build
         run: |
           dotnet publish Subdominator/Subdominator.csproj -r "${{ matrix.target }}" -c Release -o "Release-${{ matrix.target }}" -p:UseNativeAot=true
-          mv "Release-${{ matrix.target }}/Subdominator" "Release-${{ matrix.target }}/Subdominator-${{ matrix.kind }}"
+          [ -f "Release-${{ matrix.target }}/Subdominator" ] && mv "Release-${{ matrix.target }}/Subdominator" "Release-${{ matrix.target }}/Subdominator-${{ matrix.kind }}"
+          [ -f "Release-${{ matrix.target }}/Subdominator.exe" ] && mv "Release-${{ matrix.target }}/Subdominator.exe" "Release-${{ matrix.target }}/Subdominator-${{ matrix.kind }}.exe"
 
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: "Release-${{ matrix.target }}/*${{ matrix.ext }}"
+          files: |
+            "Release-${{ matrix.target }}/custom_fingerprints.json"
+            "Release-${{ matrix.target }}/Subdominator-${{ matrix.kind }}*"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
