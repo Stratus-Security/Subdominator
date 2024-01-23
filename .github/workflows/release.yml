@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   release:
     types: [published]
-    
+
 jobs:
   release:
     name: Release
@@ -27,23 +27,28 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8.0.x
 
       - name: Build
-        shell: bash
-        run: |
-          release_name="Subdominator-${{ matrix.target }}"
-          # Build everything
-          dotnet publish Subdominator/Subdominator.csproj -r "${{ matrix.target }}" -c Release -o "Release-${{ matrix.target }}" -p:UseNativeAot=true
-          
+        run:
+          dotnet publish Subdominator/Subdominator.csproj -r "${{ matrix.target }}" -c Release -o "Subdominator-${{ matrix.target }}" -p:UseNativeAot=true
+
       - name: Publish
         uses: softprops/action-gh-release@v0.1.15
         with:
-          files: "Release-${{ matrix.target }}/*${{ matrix.ext }}"
+          files: "Subdominator-${{ matrix.target }}/*${{ matrix.ext }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload dotnet test results
+          uses: actions/upload-artifact@v4
+          with:
+            name: Subdominator-${{ matrix.target }}
+            # path: TestResults-${{ matrix.dotnet-version }}
+          # Use always() to always run this step to publish test results when there are test failures
+          if: ${{ always() }}
