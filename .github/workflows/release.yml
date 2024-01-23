@@ -38,8 +38,7 @@ jobs:
         shell: bash
         run: |
           dotnet publish Subdominator/Subdominator.csproj -r "${{ matrix.target }}" -c Release -o "Release-${{ matrix.target }}" -p:UseNativeAot=true
-          [ -f "Release-${{ matrix.target }}/Subdominator" ] && mv "Release-${{ matrix.target }}/Subdominator" "Release-${{ matrix.target }}/Subdominator-${{ matrix.kind }}"
-          [ -f "Release-${{ matrix.target }}/Subdominator.exe" ] && mv "Release-${{ matrix.target }}/Subdominator.exe" "Release-${{ matrix.target }}/Subdominator-${{ matrix.kind }}.exe"
+          mv "Release-${{ matrix.target }}/Subdominator" "Release-${{ matrix.target }}/Subdominator-${{ matrix.kind }}" || mv "Release-${{ matrix.target }}/Subdominator.exe" "Release-${{ matrix.target }}/Subdominator-${{ matrix.kind }}.exe"
 
       - name: Release
         uses: softprops/action-gh-release@v1
