@@ -35,6 +35,7 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Build
+        shell: bash
         run: |
           dotnet publish Subdominator/Subdominator.csproj -r "${{ matrix.target }}" -c Release -o "Release-${{ matrix.target }}" -p:UseNativeAot=true
           [ -f "Release-${{ matrix.target }}/Subdominator" ] && mv "Release-${{ matrix.target }}/Subdominator" "Release-${{ matrix.target }}/Subdominator-${{ matrix.kind }}"
