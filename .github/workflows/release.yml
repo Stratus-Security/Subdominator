@@ -44,8 +44,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: |
-            "Release-${{ matrix.target }}/custom_fingerprints.json"
-            "Release-${{ matrix.target }}/Subdominator-${{ matrix.kind }}*"
+          files: "Release-${{ matrix.target }}/*"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
