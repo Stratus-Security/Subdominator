@@ -9,14 +9,19 @@ Meet **Subdominator**, your new favourite CLI tool for detecting subdomain takeo
 🔍 Precision and speed are our goal. Subdominator delivers better results without the wait, see the benchmark and feature comparison below for details.
 
 ## Installing 🛠️
-To quickly, get up and running, you can download the latest release for [windows](https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator.exe) or [linux](https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator).
-Alternatively, download it via CLI (remove .exe for linux version):
+To quickly, get up and running, you can download the latest release for [windows](https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator.exe) or [linux](https://github.com/Stratus-Security/Subdominator/releases/latest/download/subdominator-linux) or [macos](https://github.com/Stratus-Security/Subdominator/releases/latest/download/subdominator-macos).
+Alternatively, download it via CLI:
 ```base
+# Windows
 wget https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator.exe
+# Linux
+wget https://github.com/Stratus-Security/Subdominator/releases/latest/download/subdominator-linux
+# macOS
+wget https://github.com/Stratus-Security/Subdominator/releases/latest/download/subdominator-macos
 ```
 
 ## Quick Start 🚦
-To quickly check a list of domains, simply run: 
+To quickly check a list of domains, simply run:
 ```
 Subdominator.exe -l subdomains.txt -o takeovers.txt
 ```
@@ -51,9 +56,9 @@ The output format is as follows:
 For example, a vulnerable Azure CDN takeover will look like this:
 ```
 [Microsoft Azure] example.stratussecurity.com - CNAME: stratus-cdn-stg.azureedge.net
-``` 
+```
 
-If you use the verbose flag, it will print all domains checked. 
+If you use the verbose flag, it will print all domains checked.
 For example, this shows the same vulnerable domain and another non-vulnerable domain indicated by [-]:
 ```
 [Microsoft Azure] example.stratussecurity.com - CNAME: stratus-cdn-stg.azureedge.net
@@ -105,7 +110,7 @@ A benchmark was run across ~100,000 subdomains to compare performance with other
 ## Contributions
 Got a suggestion, fingerprint, or want to chip in? We're all ears! Open a PR or issue – this will keep subdominator on top! 😄
 
-## Fingerprints 
+## Fingerprints
 The fingerprints and services are dynamically pulled from the [CanITakeOverXYZ repo](https://github.com/EdOverflow/can-i-take-over-xyz) as a source of truth. To fill in the gaps and correct incorrect fingerprints, this tool also has its own [custom fingerprints list](https://github.com/Stratus-Security/Subdominator/blob/master/Subdominator/custom_fingerprints.json) which is used in conjunction.
 
 Below is the current list of services supported, to ignore edge cases use the `-eu` flag.
