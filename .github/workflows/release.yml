@@ -40,8 +40,9 @@ jobs:
           release_name="Subdominator-${{ matrix.target }}"
           # Build everything
           dotnet publish Subdominator/Subdominator.csproj -r "${{ matrix.target }}" -c Release -o "Release-${{ matrix.target }}" -p:UseNativeAot=true
+          
       - name: Publish
-        uses: softprops/action-gh-release@v0.1.5
+        uses: softprops/action-gh-release@v0.1.15
         with:
           files: "Release-${{ matrix.target }}/*${{ matrix.ext }}"
         env:
