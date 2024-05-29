@@ -46,7 +46,7 @@ public class SubdomainHijack
 
     // Extra cnames
     private Dictionary<string, List<string>> _cnameOverrides = new()
-    {        
+    {
         { "Acquia", new(){ "acquia-test.co" } },
         { "Campaign Monitor", new(){ "createsend.com", "name.createsend.com" } },
         { "Canny", new(){ "cname.canny.io" } },
@@ -164,7 +164,7 @@ public class SubdomainHijack
                     // Save the file locally for future use
                     await File.WriteAllTextAsync(filePath, fingerprintsData);
                 }
-                
+
                 // We also have a custom fingerprints file to enhance coverage but still allow auto-updates from can-i-take-over-xyz
                 if (!update && File.Exists(customFilePath))
                 {
@@ -234,7 +234,7 @@ public class SubdomainHijack
                     {
                         fingerprint.Nxdomain = _nxDomainOverride[fingerprint.Service];
                     }
-                    
+
                     if (_aOverrides.ContainsKey(fingerprint.Service))
                     {
                         fingerprint.ARecords.AddRange(_aOverrides[fingerprint.Service]);
@@ -259,7 +259,7 @@ public class SubdomainHijack
                 // Now iterate custom fingerprints. The custom list is used for completeness, so it should not override the original
                 foreach(var fingerprint in customFingerprints)
                 {
-                    if (fingerprint.Status.ToLower() != "not vulnerable" && 
+                    if (fingerprint.Status.ToLower() != "not vulnerable" &&
                         !_fingerprints.Any(f => f.Service.ToLower() == fingerprint.Service.ToLower())
                     )
                     {
@@ -404,7 +404,7 @@ public class SubdomainHijack
         }
 
         // Only check fingerprints if we have a (partial) match
-        if (isCnameMatch || isAMatch || isAaaaMatch) 
+        if (isCnameMatch || isAMatch || isAaaaMatch)
         {
             var response = await HttpGet(domain, fingerprint.HttpStatus >= 300 && fingerprint.HttpStatus < 400);
             string responseBody = "";
@@ -457,7 +457,7 @@ public class SubdomainHijack
 
     private async Task ResolveDns(string domain, CnameResolutionResult result, HashSet<string> visitedCnames)
     {
-        const int maxRetries = 3; // Maximum number of retries
+        const int maxRetries = 1; // Maximum number of retries
         int retryCount = 0;
 
         while (retryCount < maxRetries)
@@ -650,7 +650,7 @@ public class SubdomainHijack
         {
             return await client.GetAsync($"https://{domain}");
         }
-        catch (HttpRequestException ex) when (ex.Message.Contains("No such host is known.")) 
+        catch (HttpRequestException ex) when (ex.Message.Contains("No such host is known."))
         {
             // We could just skip HTTP requests when we detect NXDOMAIN responses but there's edge cases.
             // For example, there could be an A record that points to an IP on a vulnerable domain
