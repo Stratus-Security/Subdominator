@@ -192,7 +192,7 @@ public class Program
 
     static IEnumerable<string> FilterAndNormalizeDomains(List<string> domains, bool verbose = false)
     {
-        var domainParser = new DomainParser(new WebTldRuleProvider("https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Subdominator/public_suffix_list.dat", new FileCacheProvider(cacheTimeToLive: TimeSpan.FromSeconds(0))));
+        var domainParser = new DomainParser(new WebTldRuleProvider("https://raw.githubusercontent.com/topscoder/Subdominator/master/Subdominator/public_suffix_list.dat", new FileCacheProvider(cacheTimeToLive: TimeSpan.FromSeconds(0))));
 
         // Normalize domains and check validity
         var normalizedDomains = domains

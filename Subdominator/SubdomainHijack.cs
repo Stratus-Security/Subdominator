@@ -135,7 +135,7 @@ public class SubdomainHijack
 
         _dnsClient = new LookupClient();
 
-        _domainParser = new DomainParser(new WebTldRuleProvider("https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Subdominator/public_suffix_list.dat", new FileCacheProvider(cacheTimeToLive: TimeSpan.FromSeconds(0))));
+        _domainParser = new DomainParser(new WebTldRuleProvider("https://raw.githubusercontent.com/topscoder/Subdominator/master/Subdominator/public_suffix_list.dat", new FileCacheProvider(cacheTimeToLive: TimeSpan.FromSeconds(0))));
     }
 
     public async Task<IEnumerable<Fingerprint>> GetFingerprintsAsync(bool excludeUnlikely, bool update = false)
@@ -172,7 +172,7 @@ public class SubdomainHijack
                 }
                 else
                 {
-                    var customFingerprintsUrl = "https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Subdominator/custom_fingerprints.json";
+                    var customFingerprintsUrl = "https://raw.githubusercontent.com/topscoder/Subdominator/master/Subdominator/custom_fingerprints.json";
                     customFingerprintsData = await _httpClient.GetStringAsync(customFingerprintsUrl);
 
                     await File.WriteAllTextAsync(customFilePath, customFingerprintsData);

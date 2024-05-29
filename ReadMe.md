@@ -1,5 +1,5 @@
-![GitHub Actions CI](https://github.com/Stratus-Security/Subdominator/workflows/CI/badge.svg)
-![GitHub all releases](https://img.shields.io/github/downloads/Stratus-Security/Subdominator/total)
+![GitHub Actions CI](https://github.com/topscoder/Subdominator/workflows/CI/badge.svg)
+![GitHub all releases](https://img.shields.io/github/downloads/topscoder/Subdominator/total)
 
 # Subdominator 🚀
 
@@ -9,19 +9,19 @@ Meet **Subdominator**, your new favourite CLI tool for detecting subdomain takeo
 🔍 Precision and speed are our goal. Subdominator delivers better results without the wait, see the benchmark and feature comparison below for details.
 
 ## Installing 🛠️
-To quickly, get up and running, you can download the latest release for [windows](https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator.exe) or [linux](https://github.com/Stratus-Security/Subdominator/releases/latest/download/subdominator-linux) or [macos](https://github.com/Stratus-Security/Subdominator/releases/latest/download/subdominator-macos).
+To quickly, get up and running, you can download the latest release for [windows](https://github.com/topscoder/Subdominator/releases/latest/download/Subdominator.exe) or [linux](https://github.com/topscoder/Subdominator/releases/latest/download/subdominator-linux) or [macos](https://github.com/topscoder/Subdominator/releases/latest/download/subdominator-macos).
 Alternatively, download it via CLI:
 ### Windows
 ```base
-wget https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator.exe
+wget https://github.com/topscoder/Subdominator/releases/latest/download/Subdominator.exe
 ```
 ### Linux
 ```base
-wget https://github.com/Stratus-Security/Subdominator/releases/latest/download/subdominator-linux
+wget https://github.com/topscoder/Subdominator/releases/latest/download/subdominator-linux
 ```
 ### macOS
 ```base
-wget https://github.com/Stratus-Security/Subdominator/releases/latest/download/subdominator-macos
+wget https://github.com/topscoder/Subdominator/releases/latest/download/subdominator-macos
 ```
 
 ## Quick Start 🚦
@@ -77,7 +77,7 @@ These domains have been validated to be vulnerable with the services directly, n
 
 ## Demo
 The tool running across 1000 passively gathered subdomains:
-![Demo](https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Demo.gif)
+![Demo](https://raw.githubusercontent.com/topscoder/Subdominator/master/Demo.gif)
 
 ## Benchmark 📊
 A benchmark was run across ~100,000 subdomains to compare performance with other popular tools
@@ -115,7 +115,7 @@ A benchmark was run across ~100,000 subdomains to compare performance with other
 Got a suggestion, fingerprint, or want to chip in? We're all ears! Open a PR or issue – this will keep subdominator on top! 😄
 
 ## Fingerprints
-The fingerprints and services are dynamically pulled from the [CanITakeOverXYZ repo](https://github.com/EdOverflow/can-i-take-over-xyz) as a source of truth. To fill in the gaps and correct incorrect fingerprints, this tool also has its own [custom fingerprints list](https://github.com/Stratus-Security/Subdominator/blob/master/Subdominator/custom_fingerprints.json) which is used in conjunction.
+The fingerprints and services are dynamically pulled from the [CanITakeOverXYZ repo](https://github.com/EdOverflow/can-i-take-over-xyz) as a source of truth. To fill in the gaps and correct incorrect fingerprints, this tool also has its own [custom fingerprints list](https://github.com/topscoder/Subdominator/blob/master/Subdominator/custom_fingerprints.json) which is used in conjunction.
 
 Below is the current list of services supported, to ignore edge cases use the `-eu` flag.
 | Service | Status |
