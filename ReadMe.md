@@ -1,7 +1,14 @@
-![GitHub Actions CI](https://github.com/Stratus-Security/Subdominator/workflows/CI/badge.svg)
-![GitHub all releases](https://img.shields.io/github/downloads/Stratus-Security/Subdominator/total)
+![GitHub Actions CI](https://github.com/topscoder/Subdominator/workflows/CI/badge.svg)
+![GitHub all releases](https://img.shields.io/github/downloads/topscoder/Subdominator/total)
 
 # Subdominator 🚀
+
+> [!NOTE]
+> Please be aware this is a fork of the original Subdominator from Stratus-Security.
+> This fork has some updates: 🌟
+> - Verbose mode updated; Subdominator only prints extra information in verbose mode (it is silent by default)
+> - It's performance upgraded; HTTP retries are downscaled from 3 to 1 to boost performance
+> - Ready made binaries for [Windows, Linux and macOS](https://github.com/topscoder/Subdominator/releases/latest)
 
 ## Welcome to the Subdominator Club!
 Meet **Subdominator**, your new favourite CLI tool for detecting subdomain takeovers. It's designed to be fast, accurate, and dependable, offering [a significant improvement over other available tools](https://www.stratussecurity.com/post/the-ultimate-subdomain-takeover-tool).
@@ -9,20 +16,48 @@ Meet **Subdominator**, your new favourite CLI tool for detecting subdomain takeo
 🔍 Precision and speed are our goal. Subdominator delivers better results without the wait, see the benchmark and feature comparison below for details.
 
 ## Installing 🛠️
-To quickly, get up and running, you can download the latest release for [windows](https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator.exe) or [linux](https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator).
-Alternatively, download it via CLI (remove .exe for linux version):
-```base
-wget https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator.exe
+To quickly, get up and running, you can download the latest release for [windows](https://github.com/topscoder/Subdominator/releases/latest/download/Subdominator.exe) or [linux](https://github.com/topscoder/Subdominator/releases/latest/download/subdominator-linux) or [macos](https://github.com/topscoder/Subdominator/releases/latest/download/subdominator-macos).
+Alternatively, download it via CLI:
+### Windows
+```bash
+wget https://github.com/topscoder/Subdominator/releases/latest/download/Subdominator.exe
+```
+### Linux
+```bash
+wget https://github.com/topscoder/Subdominator/releases/latest/download/subdominator-linux
+```
+### macOS
+```bash
+wget https://github.com/topscoder/Subdominator/releases/latest/download/subdominator-macos
 ```
 
 ## Quick Start 🚦
-To quickly check a list of domains, simply run: 
-```
+To quickly check a list of domains, simply run:
+### Windows
+```bash
 Subdominator.exe -l subdomains.txt -o takeovers.txt
 ```
-Or to quickly check a single domain, run:
+### Linux
+```bash
+subdominator-linux -l subdomains.txt -o takeovers.txt
 ```
+### macOS
+```bash
+subdominator-macos -l subdomains.txt -o takeovers.txt
+```
+
+Or to quickly check a single domain, run:
+### Windows
+```bash
 Subdominator.exe -d sub.example.com
+```
+### Linux
+```bash
+subdominator-linux -d sub.example.com
+```
+### macOS
+```bash
+subdominator-macos -d sub.example.com
 ```
 
 ## Options 🎛️
@@ -51,9 +86,9 @@ The output format is as follows:
 For example, a vulnerable Azure CDN takeover will look like this:
 ```
 [Microsoft Azure] example.stratussecurity.com - CNAME: stratus-cdn-stg.azureedge.net
-``` 
+```
 
-If you use the verbose flag, it will print all domains checked. 
+If you use the verbose flag, it will print all domains checked.
 For example, this shows the same vulnerable domain and another non-vulnerable domain indicated by [-]:
 ```
 [Microsoft Azure] example.stratussecurity.com - CNAME: stratus-cdn-stg.azureedge.net
@@ -68,7 +103,7 @@ These domains have been validated to be vulnerable with the services directly, n
 
 ## Demo
 The tool running across 1000 passively gathered subdomains:
-![Demo](https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Demo.gif)
+![Demo](https://raw.githubusercontent.com/topscoder/Subdominator/master/Demo.gif)
 
 ## Benchmark 📊
 A benchmark was run across ~100,000 subdomains to compare performance with other popular tools
@@ -105,8 +140,8 @@ A benchmark was run across ~100,000 subdomains to compare performance with other
 ## Contributions
 Got a suggestion, fingerprint, or want to chip in? We're all ears! Open a PR or issue – this will keep subdominator on top! 😄
 
-## Fingerprints 
-The fingerprints and services are dynamically pulled from the [CanITakeOverXYZ repo](https://github.com/EdOverflow/can-i-take-over-xyz) as a source of truth. To fill in the gaps and correct incorrect fingerprints, this tool also has its own [custom fingerprints list](https://github.com/Stratus-Security/Subdominator/blob/master/Subdominator/custom_fingerprints.json) which is used in conjunction.
+## Fingerprints
+The fingerprints and services are dynamically pulled from the [CanITakeOverXYZ repo](https://github.com/EdOverflow/can-i-take-over-xyz) as a source of truth. To fill in the gaps and correct incorrect fingerprints, this tool also has its own [custom fingerprints list](https://github.com/topscoder/Subdominator/blob/master/Subdominator/custom_fingerprints.json) which is used in conjunction.
 
 Below is the current list of services supported, to ignore edge cases use the `-eu` flag.
 | Service | Status |

@@ -117,11 +117,10 @@ public class Program
 
         // Define maximum concurrent tasks
         int maxConcurrentTasks = o.Threads;
-        bool verbose = o.Verbose;
         var vulnerableCount = 0;
 
         // Pre-check domains passed in and filter any that are invalid
-        var domains = FilterAndNormalizeDomains(rawDomains);
+        var domains = FilterAndNormalizeDomains(rawDomains, o.Verbose);
 
         // Pre-load fingerprints to memory
         var hijackChecker = new SubdomainHijack();
@@ -138,7 +137,7 @@ public class Program
         var updateTask = PeriodicUpdateAsync(updateInterval, () =>
         {
             // Skip the first print since it's 0 anyway
-            if (completedTasks != 0)
+            if (o.Verbose == true && completedTasks != 0)
             {
                 var elapsed = stopwatch.Elapsed;
                 var rate = completedTasks / elapsed.TotalSeconds;
@@ -148,7 +147,7 @@ public class Program
 
         await Parallel.ForEachAsync(domains, new ParallelOptions { MaxDegreeOfParallelism = maxConcurrentTasks }, async (domain, cancellationToken) =>
         {
-            var isVulnerable = await CheckAndLogDomain(hijackChecker, domain, o.OutputFile, o.Validate, verbose);
+            var isVulnerable = await CheckAndLogDomain(hijackChecker, domain, o.OutputFile, o.Validate, o.Verbose);
             if(isVulnerable)
             {
                 Interlocked.Increment(ref vulnerableCount);
@@ -161,10 +160,12 @@ public class Program
         await updateTask; // Ensure the update task completes before finishing the program
 
         // One last output for clarity
-        var elapsed = stopwatch.Elapsed;
-        var rate = completedTasks / elapsed.TotalSeconds;
-        Console.WriteLine($"{completedTasks}/{domains.Count()} domains processed. Average rate: {rate:F2} domains/sec");
-        Console.WriteLine($"Done in {stopwatch.Elapsed.TotalSeconds:N2}s! Subdominator found {vulnerableCount} vulnerable domains.");
+        if (o.Verbose == true) {
+            var elapsed = stopwatch.Elapsed;
+            var rate = completedTasks / elapsed.TotalSeconds;
+            Console.WriteLine($"{completedTasks}/{domains.Count()} domains processed. Average rate: {rate:F2} domains/sec");
+            Console.WriteLine($"Done in {stopwatch.Elapsed.TotalSeconds:N2}s! Subdominator found {vulnerableCount} vulnerable domains.");
+        }
 
         // Exit non-zero if we have a takeover, for the DevOps folks
         if (vulnerableCount > 0)
@@ -189,9 +190,9 @@ public class Program
         }
     }
 
-    static IEnumerable<string> FilterAndNormalizeDomains(List<string> domains)
+    static IEnumerable<string> FilterAndNormalizeDomains(List<string> domains, bool verbose = false)
     {
-        var domainParser = new DomainParser(new WebTldRuleProvider("https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Subdominator/public_suffix_list.dat", new FileCacheProvider(cacheTimeToLive: TimeSpan.FromSeconds(0))));
+        var domainParser = new DomainParser(new WebTldRuleProvider("https://raw.githubusercontent.com/topscoder/Subdominator/master/Subdominator/public_suffix_list.dat", new FileCacheProvider(cacheTimeToLive: TimeSpan.FromSeconds(0))));
 
         // Normalize domains and check validity
         var normalizedDomains = domains
@@ -200,12 +201,15 @@ public class Program
             .ToList();
 
         // Count and report removed domains
-        var removedDomains = normalizedDomains.Count(d => !d.IsValid);
-        if (removedDomains > 0)
+        if (verbose == true)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"Removed {removedDomains} invalid domains.");
-            Console.ResetColor();
+            var removedDomains = normalizedDomains.Count(d => !d.IsValid);
+            if (removedDomains > 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Removed {removedDomains} invalid domains.");
+                Console.ResetColor();
+            }
         }
 
         // Return only valid domains
