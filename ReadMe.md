@@ -3,6 +3,13 @@
 
 # Subdominator 🚀
 
+> [!NOTE]
+> Please be aware this is a fork of the original Subdominator from Stratus-Security.
+> This fork has some updates: 🌟
+> - Verbose mode updated; Subdominator only prints extra information in verbose mode (it is silent by default)
+> - It's performance upgraded; HTTP retries are downscaled from 3 to 1 to boost performance
+> - Ready made binaries for [Windows, Linux and macOS](https://github.com/topscoder/Subdominator/releases/latest)
+
 ## Welcome to the Subdominator Club!
 Meet **Subdominator**, your new favourite CLI tool for detecting subdomain takeovers. It's designed to be fast, accurate, and dependable, offering [a significant improvement over other available tools](https://www.stratussecurity.com/post/the-ultimate-subdomain-takeover-tool).
 
@@ -12,26 +19,45 @@ Meet **Subdominator**, your new favourite CLI tool for detecting subdomain takeo
 To quickly, get up and running, you can download the latest release for [windows](https://github.com/topscoder/Subdominator/releases/latest/download/Subdominator.exe) or [linux](https://github.com/topscoder/Subdominator/releases/latest/download/subdominator-linux) or [macos](https://github.com/topscoder/Subdominator/releases/latest/download/subdominator-macos).
 Alternatively, download it via CLI:
 ### Windows
-```base
+```bash
 wget https://github.com/topscoder/Subdominator/releases/latest/download/Subdominator.exe
 ```
 ### Linux
-```base
+```bash
 wget https://github.com/topscoder/Subdominator/releases/latest/download/subdominator-linux
 ```
 ### macOS
-```base
+```bash
 wget https://github.com/topscoder/Subdominator/releases/latest/download/subdominator-macos
 ```
 
 ## Quick Start 🚦
 To quickly check a list of domains, simply run:
-```
+### Windows
+```bash
 Subdominator.exe -l subdomains.txt -o takeovers.txt
 ```
-Or to quickly check a single domain, run:
+### Linux
+```bash
+subdominator-linux -l subdomains.txt -o takeovers.txt
 ```
+### macOS
+```bash
+subdominator-macos -l subdomains.txt -o takeovers.txt
+```
+
+Or to quickly check a single domain, run:
+### Windows
+```bash
 Subdominator.exe -d sub.example.com
+```
+### Linux
+```bash
+subdominator-linux -d sub.example.com
+```
+### macOS
+```bash
+subdominator-macos -d sub.example.com
 ```
 
 ## Options 🎛️
