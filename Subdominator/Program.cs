@@ -6,7 +6,6 @@ using System.Text;
 using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
-using System.CommandLine.NamingConventionBinder;
 
 namespace Subdominator;
 
@@ -14,7 +13,7 @@ public class Program
 {
     private static readonly object _fileLock = new();
 
-    public static async Task Main(string[] args)
+    public static async Task Main(string[] args = null)
     {
         Console.OutputEncoding = Encoding.UTF8;
 
@@ -33,11 +32,11 @@ public class Program
             new Option<bool>(["--validate"], "Validate the takeovers are exploitable (where possible)")
         };
 
-        command.Handler = CommandHandler.Create(async (Options options) =>
+        command.SetHandler(async (options) =>
         {
             await RunSubdominator(options);
-        });
-
+        }, new OptionsBinder([.. command.Options]));
+            
         // Parse the incoming args and invoke the handler
         await command.InvokeAsync(args);
     }

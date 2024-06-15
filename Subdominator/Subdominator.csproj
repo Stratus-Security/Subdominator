@@ -21,7 +21,6 @@
     <PackageReference Include="DnsClient" Version="1.7.0" />
     <PackageReference Include="Nager.PublicSuffix" Version="2.4.0" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageReference Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta4.22272.1" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
     <PackageReference Include="Whois" Version="3.0.1" />
   </ItemGroup>
