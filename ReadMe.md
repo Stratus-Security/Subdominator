@@ -9,20 +9,29 @@ Meet **Subdominator**, your new favourite CLI tool for detecting subdomain takeo
 🔍 Precision and speed are our goal. Subdominator delivers better results without the wait, see the benchmark and feature comparison below for details.
 
 ## Installing 🛠️
-To quickly, get up and running, you can download the latest release for [windows](https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator.exe) or [linux](https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator).
-Alternatively, download it via CLI (remove .exe for linux version):
-```base
+To quickly, get up and running, you can download the latest release for [windows](https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator.exe), [linux](https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator) or [macos](https://github.com/Stratus-Security/Subdominator/releases/latest/download/subdominator-macos).
+Alternatively, download it via CLI:
+### Windows
+```bash
 wget https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator.exe
+```
+### Linux
+```bash
+wget https://github.com/Stratus-Security/Subdominator/releases/latest/download/subdominator
+```
+### macOS
+```bash
+wget https://github.com/Stratus-Security/Subdominator/releases/latest/download/subdominator-macos
 ```
 
 ## Quick Start 🚦
 To quickly check a list of domains, simply run: 
-```
-Subdominator.exe -l subdomains.txt -o takeovers.txt
+```bash
+Subdominator -l subdomains.txt -o takeovers.txt
 ```
 Or to quickly check a single domain, run:
-```
-Subdominator.exe -d sub.example.com
+```bash
+Subdominator -d sub.example.com
 ```
 
 ## Options 🎛️
@@ -32,6 +41,7 @@ Subdominator.exe -d sub.example.com
 -o, --output <output>    Output subdomains to a file
 -t, --threads <threads>  Number of domains to check at once [default: 50]
 -v, --verbose            Print extra information
+-q, --quiet              Quiet mode: Only print found results
 -eu, --exclude-unlikely  Exclude unlikely (edge-case) fingerprints
 -c, --csv <csv>          Column index or heading to parse for CSV file. Forces -l to read as CSV instead of line-delimited
 --validate               Validate the takeovers are exploitable (where possible)

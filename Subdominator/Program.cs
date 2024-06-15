@@ -6,6 +6,7 @@ using System.Text;
 using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
+using System.CommandLine.NamingConventionBinder;
 
 namespace Subdominator;
 
@@ -17,44 +18,28 @@ public class Program
     {
         Console.OutputEncoding = Encoding.UTF8;
 
-        var rootCommand = new RootCommand("A subdomain takover detection tool for cool kids");
-
-        var optionDomain = new Option<string>(new[] { "-d", "--domain" }, "A single domain to check");
-        var optionList = new Option<string>(new[] { "-l", "--list" }, "A list of domains to check (line delimited)");
-        var optionOutput = new Option<string>(new[] { "-o", "--output" }, "Output subdomains to a file");
-        var optionThreads = new Option<int>(new[] { "-t", "--threads" }, () => 50, "Number of domains to check at once");
-        var optionVerbose = new Option<bool>(new[] { "-v", "--verbose" }, "Print extra information");
-        var optionExcludeUnlikely = new Option<bool>(new[] { "-eu", "--exclude-unlikely" }, "Exclude unlikely (edge-case) fingerprints");
-        var optionCsv = new Option<string>(new[] { "-c", "--csv" }, "Heading or column index to parse for CSV file. Forces -l to read as CSV instead of line-delimited");
-        var optionValidate = new Option<bool>(new[] { "--validate" }, "Validate the takeovers are exploitable (where possible)");
-
-        rootCommand.AddOption(optionDomain);
-        rootCommand.AddOption(optionList);
-        rootCommand.AddOption(optionOutput);
-        rootCommand.AddOption(optionThreads);
-        rootCommand.AddOption(optionVerbose);
-        rootCommand.AddOption(optionExcludeUnlikely);
-        rootCommand.AddOption(optionValidate);
-        rootCommand.AddOption(optionCsv);
-
-        rootCommand.SetHandler(async (string domain, string domainsFile, string csvHeading, string outputFile, int threads, bool verbose, bool excludeUnlikely, bool validate) =>
+        // Define the command line options
+        // Note: For options that don't match the flag (e.g. --domain == Options.Domain), use name property to map to the correct property
+        var command = new RootCommand("A subdomain takeover detection tool for cool kids")
         {
-            var options = new Options
-            {
-                Domain = domain,
-                DomainsFile = domainsFile,
-                OutputFile = outputFile,
-                CsvHeading = csvHeading,
-                Threads = threads,
-                Verbose = verbose,
-                ExcludeUnlikely = excludeUnlikely,
-                Validate = validate
-            };
+            new Option<string>(["-d", "--domain"], "A single domain to check"),
+            new Option<string>(["-l", "--list"], "A list of domains to check (line delimited)") { Name = "DomainsFile" }, 
+            new Option<string>(["-o", "--output"], "Output subdomains to a file") { Name = "OutputFile" },
+            new Option<int>(["-t", "--threads"], () => 50, "Number of domains to check at once"),
+            new Option<bool>(["-v", "--verbose"], "Print extra information"),
+            new Option<bool>(["-q", "--quiet"], "Quiet mode: Only print found results"),
+            new Option<bool>(["-eu", "--exclude-unlikely"], "Exclude unlikely (edge-case) fingerprints"),
+            new Option<string>(["-c", "--csv"], "Heading or column index to parse for CSV file. Forces -l to read as CSV instead of line-delimited") { Name = "CsvHeading" },
+            new Option<bool>(["--validate"], "Validate the takeovers are exploitable (where possible)")
+        };
+
+        command.Handler = CommandHandler.Create(async (Options options) =>
+        {
             await RunSubdominator(options);
-        }, optionDomain, optionList, optionCsv, optionOutput, optionThreads, optionVerbose, optionExcludeUnlikely, optionValidate);
+        });
 
         // Parse the incoming args and invoke the handler
-        await rootCommand.InvokeAsync(args);
+        await command.InvokeAsync(args);
     }
 
     public static async Task RunSubdominator(Options o)
@@ -117,11 +102,10 @@ public class Program
 
         // Define maximum concurrent tasks
         int maxConcurrentTasks = o.Threads;
-        bool verbose = o.Verbose;
         var vulnerableCount = 0;
 
         // Pre-check domains passed in and filter any that are invalid
-        var domains = FilterAndNormalizeDomains(rawDomains);
+        var domains = FilterAndNormalizeDomains(rawDomains, o.Quiet);
 
         // Pre-load fingerprints to memory
         var hijackChecker = new SubdomainHijack();
@@ -138,7 +122,7 @@ public class Program
         var updateTask = PeriodicUpdateAsync(updateInterval, () =>
         {
             // Skip the first print since it's 0 anyway
-            if (completedTasks != 0)
+            if (!o.Quiet && completedTasks != 0)
             {
                 var elapsed = stopwatch.Elapsed;
                 var rate = completedTasks / elapsed.TotalSeconds;
@@ -148,7 +132,7 @@ public class Program
 
         await Parallel.ForEachAsync(domains, new ParallelOptions { MaxDegreeOfParallelism = maxConcurrentTasks }, async (domain, cancellationToken) =>
         {
-            var isVulnerable = await CheckAndLogDomain(hijackChecker, domain, o.OutputFile, o.Validate, verbose);
+            var isVulnerable = await CheckAndLogDomain(hijackChecker, domain, o.OutputFile, o.Validate, o.Verbose, o.Quiet);
             if(isVulnerable)
             {
                 Interlocked.Increment(ref vulnerableCount);
@@ -161,10 +145,13 @@ public class Program
         await updateTask; // Ensure the update task completes before finishing the program
 
         // One last output for clarity
-        var elapsed = stopwatch.Elapsed;
-        var rate = completedTasks / elapsed.TotalSeconds;
-        Console.WriteLine($"{completedTasks}/{domains.Count()} domains processed. Average rate: {rate:F2} domains/sec");
-        Console.WriteLine($"Done in {stopwatch.Elapsed.TotalSeconds:N2}s! Subdominator found {vulnerableCount} vulnerable domains.");
+        if (!o.Quiet)
+        {
+            var elapsed = stopwatch.Elapsed;
+            var rate = completedTasks / elapsed.TotalSeconds;
+            Console.WriteLine($"{completedTasks}/{domains.Count()} domains processed. Average rate: {rate:F2} domains/sec");
+            Console.WriteLine($"Done in {stopwatch.Elapsed.TotalSeconds:N2}s! Subdominator found {vulnerableCount} vulnerable domains.");
+        }
 
         // Exit non-zero if we have a takeover, for the DevOps folks
         if (vulnerableCount > 0)
@@ -189,7 +176,7 @@ public class Program
         }
     }
 
-    static IEnumerable<string> FilterAndNormalizeDomains(List<string> domains)
+    static IEnumerable<string> FilterAndNormalizeDomains(List<string> domains, bool quiet)
     {
         var domainParser = new DomainParser(new WebTldRuleProvider("https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Subdominator/public_suffix_list.dat", new FileCacheProvider(cacheTimeToLive: TimeSpan.FromSeconds(0))));
 
@@ -201,7 +188,7 @@ public class Program
 
         // Count and report removed domains
         var removedDomains = normalizedDomains.Count(d => !d.IsValid);
-        if (removedDomains > 0)
+        if (!quiet && removedDomains > 0)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"Removed {removedDomains} invalid domains.");
@@ -212,7 +199,7 @@ public class Program
         return normalizedDomains.Where(d => d.IsValid).Select(d => d.Original);
     }
 
-    static async Task<bool> CheckAndLogDomain(SubdomainHijack hijackChecker, string domain, string outputFile, bool validateResults, bool verbose = false)
+    static async Task<bool> CheckAndLogDomain(SubdomainHijack hijackChecker, string domain, string outputFile, bool validateResults, bool verbose, bool quiet)
     {
         bool isFound = false;
         try

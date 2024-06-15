@@ -9,12 +9,16 @@ jobs:
     name: Release
     strategy:
       matrix:
-        kind: ['linux', 'windows']
+        kind: ['linux', 'macos', 'windows']
         include:
           - kind: linux
             os: ubuntu-latest
             target: linux-x64
             ext: ''
+          - kind: macos
+            os: macos-latest
+            target: osx-x64
+            ext: '-macos'
           - kind: windows
             os: windows-latest
             target: win-x64
@@ -22,10 +26,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
