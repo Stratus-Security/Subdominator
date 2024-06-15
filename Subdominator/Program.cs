@@ -12,6 +12,7 @@ namespace Subdominator;
 public class Program
 {
     private static readonly object _fileLock = new();
+    private static StreamWriter? _outputFileWriter = null;
 
     public static async Task Main(string[] args = null)
     {
@@ -129,9 +130,18 @@ public class Program
             }
         }, cts.Token);
 
+        // Set up output file if specified
+        if (!string.IsNullOrWhiteSpace(o.OutputFile))
+        {
+            _outputFileWriter = new StreamWriter(o.OutputFile, append: true)
+            {
+                AutoFlush = true
+            };
+        }
+
         await Parallel.ForEachAsync(domains, new ParallelOptions { MaxDegreeOfParallelism = maxConcurrentTasks }, async (domain, cancellationToken) =>
         {
-            var isVulnerable = await CheckAndLogDomain(hijackChecker, domain, o.OutputFile, o.Validate, o.Verbose, o.Quiet);
+            var isVulnerable = await CheckAndLogDomain(hijackChecker, domain, o.Validate, o.Verbose, o.Quiet);
             if(isVulnerable)
             {
                 Interlocked.Increment(ref vulnerableCount);
@@ -139,6 +149,7 @@ public class Program
             Interlocked.Increment(ref completedTasks);
         });
 
+        _outputFileWriter?.Close();
         stopwatch.Stop();
         cts.Cancel(); // Signal the update task to stop
         await updateTask; // Ensure the update task completes before finishing the program
@@ -198,7 +209,7 @@ public class Program
         return normalizedDomains.Where(d => d.IsValid).Select(d => d.Original);
     }
 
-    static async Task<bool> CheckAndLogDomain(SubdomainHijack hijackChecker, string domain, string outputFile, bool validateResults, bool verbose, bool quiet)
+    static async Task<bool> CheckAndLogDomain(SubdomainHijack hijackChecker, string domain, bool validateResults, bool verbose, bool quiet)
     {
         bool isFound = false;
         try
@@ -244,9 +255,9 @@ public class Program
                     Console.ResetColor();
                     Console.Write($"] {domain}" + locationString + Environment.NewLine);
 
-                    if (!string.IsNullOrWhiteSpace(outputFile))
+                    if (_outputFileWriter != null)
                     {
-                        File.AppendAllText(outputFile, output + locationString + Environment.NewLine);
+                        _outputFileWriter.WriteLine(output + locationString);
                     }
                 }
             }
