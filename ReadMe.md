@@ -9,19 +9,10 @@ Meet **Subdominator**, your new favourite CLI tool for detecting subdomain takeo
 🔍 Precision and speed are our goal. Subdominator delivers better results without the wait, see the benchmark and feature comparison below for details.
 
 ## Installing 🛠️
-To quickly, get up and running, you can download the latest release for [windows](https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator.exe), [linux](https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator) or [macos](https://github.com/Stratus-Security/Subdominator/releases/latest/download/subdominator-macos).
-Alternatively, download it via CLI:
-### Windows
+To quickly, get up and running, you can download the latest release for [windows](https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator.exe) or [linux](https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator).
+Alternatively, download it via CLI (remove .exe for linux version):
 ```bash
 wget https://github.com/Stratus-Security/Subdominator/releases/latest/download/Subdominator.exe
-```
-### Linux
-```bash
-wget https://github.com/Stratus-Security/Subdominator/releases/latest/download/subdominator
-```
-### macOS
-```bash
-wget https://github.com/Stratus-Security/Subdominator/releases/latest/download/subdominator-macos
 ```
 
 ## Quick Start 🚦
