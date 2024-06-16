@@ -440,18 +440,6 @@
     "vulnerable": true
   },
   {
-    "cname": [ ".easyredir.net" ],
-    "a": [ "13.248.160.137", "76.223.24.124", "75.2.43.150", "99.83.186.106" ],
-    "discussion": "https://github.com/EdOverflow/can-i-take-over-xyz/issues/285",
-    "documentation": "https://help.easyredir.com/en/articles/450935-configuring-your-dns-for-url-redirects",
-    "fingerprint": "HTTP_STATUS=404",
-    "http_status": 404,
-    "nxdomain": false,
-    "service": "EasyRedir",
-    "status": "Vulnerable",
-    "vulnerable": true
-  },
-  {
     "cname": [ ".app.link", ".bnc.lt" ],
     "discussion": "https://github.com/EdOverflow/can-i-take-over-xyz/issues/197",
     "documentation": "https://help.branch.io/using-branch/docs/advanced-settings-configuration",
