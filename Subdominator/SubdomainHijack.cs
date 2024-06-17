@@ -1,5 +1,8 @@
 ﻿using DnsClient;
+using Microsoft.Extensions.Configuration;
 using Nager.PublicSuffix;
+using Nager.PublicSuffix.RuleProviders.CacheProviders;
+using Nager.PublicSuffix.RuleProviders;
 using Subdominator.Models;
 using Subdominator.Utils;
 using System.Collections.Concurrent;
@@ -135,7 +138,16 @@ public class SubdomainHijack
 
         _dnsClient = new LookupClient();
 
-        _domainParser = new DomainParser(new WebTldRuleProvider("https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Subdominator/public_suffix_list.dat", new FileCacheProvider(cacheTimeToLive: TimeSpan.FromSeconds(0))));
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+            [
+                new("Nager:PublicSuffix:DataUrl", "https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Subdominator/public_suffix_list.dat")
+            ])
+            .Build();
+        var cacheProvider = new LocalFileSystemCacheProvider();
+        var ruleProvider = new CachedHttpRuleProvider(cacheProvider, new HttpClient());
+        ruleProvider.BuildAsync().GetAwaiter().GetResult();
+        _domainParser = new DomainParser(ruleProvider);
     }
 
     public async Task<IEnumerable<Fingerprint>> GetFingerprintsAsync(bool excludeUnlikely, bool update = false)

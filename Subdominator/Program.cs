@@ -6,6 +6,10 @@ using System.Text;
 using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
+using Nager.PublicSuffix.RuleProviders;
+using System.Net.Http;
+using Nager.PublicSuffix.RuleProviders.CacheProviders;
+using Microsoft.Extensions.Configuration;
 
 namespace Subdominator;
 
@@ -105,7 +109,7 @@ public class Program
         var vulnerableCount = 0;
 
         // Pre-check domains passed in and filter any that are invalid
-        var domains = FilterAndNormalizeDomains(rawDomains, o.Quiet);
+        var domains = await FilterAndNormalizeDomains(rawDomains, o.Quiet);
 
         // Pre-load fingerprints to memory
         var hijackChecker = new SubdomainHijack();
@@ -186,9 +190,19 @@ public class Program
         }
     }
 
-    static IEnumerable<string> FilterAndNormalizeDomains(List<string> domains, bool quiet)
+    static async Task<IEnumerable<string>> FilterAndNormalizeDomains(List<string> domains, bool quiet)
     {
-        var domainParser = new DomainParser(new WebTldRuleProvider("https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Subdominator/public_suffix_list.dat", new FileCacheProvider(cacheTimeToLive: TimeSpan.FromSeconds(0))));
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+            [
+                new("Nager:PublicSuffix:DataUrl", "https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Subdominator/public_suffix_list.dat")
+            ])
+            .Build();
+        var cacheProvider = new LocalFileSystemCacheProvider();
+        var ruleProvider = new CachedHttpRuleProvider(cacheProvider, new HttpClient());
+
+        await ruleProvider.BuildAsync();
+        var domainParser = new DomainParser(ruleProvider);
 
         // Normalize domains and check validity
         var normalizedDomains = domains
