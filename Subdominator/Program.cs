@@ -7,7 +7,6 @@ using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
 using Nager.PublicSuffix.RuleProviders;
-using System.Net.Http;
 using Nager.PublicSuffix.RuleProviders.CacheProviders;
 using Microsoft.Extensions.Configuration;
 
@@ -17,6 +16,7 @@ public class Program
 {
     private static readonly object _fileLock = new();
     private static StreamWriter? _outputFileWriter = null;
+    private static readonly string _version = "v1.71";
 
     public static async Task Main(string[] args = null)
     {
@@ -32,8 +32,8 @@ public class Program
             new Option<int>(["-t", "--threads"], () => 50, "Number of domains to check at once"),
             new Option<bool>(["-v", "--verbose"], "Print extra information"),
             new Option<bool>(["-q", "--quiet"], "Quiet mode: Only print found results"),
-            new Option<bool>(["-eu", "--exclude-unlikely"], "Exclude unlikely (edge-case) fingerprints"),
             new Option<string>(["-c", "--csv"], "Heading or column index to parse for CSV file. Forces -l to read as CSV instead of line-delimited") { Name = "CsvHeading" },
+            new Option<bool>(["-eu", "--exclude-unlikely"], "Exclude unlikely (edge-case) fingerprints"),
             new Option<bool>(["--validate"], "Validate the takeovers are exploitable (where possible)")
         };
 
@@ -48,6 +48,21 @@ public class Program
 
     public static async Task RunSubdominator(Options o)
     {
+        // Print banner!
+        if (!o.Quiet)
+        {
+            Console.WriteLine(@$"
+
+ _____       _         _                 _             _             
+/  ___|     | |       | |               (_)           | |            
+\ `--. _   _| |__   __| | ___  _ __ ___  _ _ __   __ _| |_ ___  _ __ 
+ `--. \ | | | '_ \ / _` |/ _ \| '_ ` _ \| | '_ \ / _` | __/ _ \| '__|
+/\__/ / |_| | |_) | (_| | (_) | | | | | | | | | | (_| | || (_) | |   
+\____/ \__,_|_.__/ \__,_|\___/|_| |_| |_|_|_| |_|\__,_|\__\___/|_|   
+                    {_version} | stratussecurity.com
+");
+        }
+
         // Get domain(s) from the options
         var rawDomains = new List<string>();
         if (!string.IsNullOrEmpty(o.DomainsFile))
@@ -199,10 +214,9 @@ public class Program
             ])
             .Build();
         var cacheProvider = new LocalFileSystemCacheProvider();
-        var ruleProvider = new CachedHttpRuleProvider(cacheProvider, new HttpClient());
-
-        await ruleProvider.BuildAsync();
+        var ruleProvider = new CachedHttpRuleProvider(cacheProvider, new HttpClient(), configuration);
         var domainParser = new DomainParser(ruleProvider);
+        await ruleProvider.BuildAsync();
 
         // Normalize domains and check validity
         var normalizedDomains = domains

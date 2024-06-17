@@ -145,9 +145,9 @@ public class SubdomainHijack
             ])
             .Build();
         var cacheProvider = new LocalFileSystemCacheProvider();
-        var ruleProvider = new CachedHttpRuleProvider(cacheProvider, new HttpClient());
-        ruleProvider.BuildAsync().GetAwaiter().GetResult();
+        var ruleProvider = new CachedHttpRuleProvider(cacheProvider, new HttpClient(), configuration);
         _domainParser = new DomainParser(ruleProvider);
+        ruleProvider.BuildAsync().GetAwaiter().GetResult();
     }
 
     public async Task<IEnumerable<Fingerprint>> GetFingerprintsAsync(bool excludeUnlikely, bool update = false)
