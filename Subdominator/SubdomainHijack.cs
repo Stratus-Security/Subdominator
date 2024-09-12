@@ -171,7 +171,14 @@ public class SubdomainHijack
                 {
                     // Download the file if it doesn't exist
                     var fingerprintsUrl = "https://raw.githubusercontent.com/EdOverflow/can-i-take-over-xyz/master/fingerprints.json";
-                    fingerprintsData = await _httpClient.GetStringAsync(fingerprintsUrl);
+                    try
+                    {
+                        fingerprintsData = await _httpClient.GetStringAsync(fingerprintsUrl);
+                    }
+                    catch // One retry just in case github is having a bad day
+                    {
+                        fingerprintsData = await _httpClient.GetStringAsync(fingerprintsUrl);
+                    }
 
                     // Save the file locally for future use
                     await File.WriteAllTextAsync(filePath, fingerprintsData);
@@ -185,8 +192,15 @@ public class SubdomainHijack
                 else
                 {
                     var customFingerprintsUrl = "https://raw.githubusercontent.com/Stratus-Security/Subdominator/master/Subdominator/custom_fingerprints.json";
-                    customFingerprintsData = await _httpClient.GetStringAsync(customFingerprintsUrl);
 
+                    try
+                    {
+                        customFingerprintsData = await _httpClient.GetStringAsync(customFingerprintsUrl);
+                    }
+                    catch
+                    {
+                        customFingerprintsData = await _httpClient.GetStringAsync(customFingerprintsUrl);
+                    }
                     await File.WriteAllTextAsync(customFilePath, customFingerprintsData);
                 }
 
