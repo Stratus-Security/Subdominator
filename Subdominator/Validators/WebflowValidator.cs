@@ -6,39 +6,39 @@ public class WebflowValidator : IValidator
 {
     public async Task<bool?> Execute(IEnumerable<string> cnames)
     {
-        // Webflow'a özgü doğrulama mantığı
+        // Webflow-specific validation logic
         foreach (var cname in cnames)
         {
             if (cname.Contains("webflow.com", StringComparison.OrdinalIgnoreCase))
             {
-                // Webflow alan adlarını kontrol eden algoritma
+                // Algorithm to check Webflow domains
                 try
                 {
                     using var client = new HttpClient();
                     var response = await client.GetAsync($"https://{cname}");
                     
-                    // Webflow'un 404 sayfasında genellikle belirli içerikler vardır
+                    // Webflow's 404 page usually has specific content
                     if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
                         var content = await response.Content.ReadAsStringAsync();
                         if (content.Contains("The page you are looking for doesn't exist") ||
                             content.Contains("website has been archived or deleted"))
                         {
-                            return true; // Alan adı ele geçirilebilir
+                            return true; // Domain is vulnerable to takeover
                         }
                     }
                     
-                    return false; // Alan adı aktif, ele geçirilemez
+                    return false; // Domain is active, not vulnerable
                 }
                 catch
                 {
-                    // Bağlantı hatası - potansiyel olarak ele geçirilebilir
+                    // Connection error - potentially vulnerable
                     return true;
                 }
             }
         }
         
-        // Bu validatör bu alan adı için geçerli değil
+        // This validator is not applicable for this domain
         return null;
     }
 }

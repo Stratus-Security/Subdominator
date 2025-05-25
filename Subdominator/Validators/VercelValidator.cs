@@ -6,40 +6,40 @@ public class VercelValidator : IValidator
 {
     public async Task<bool?> Execute(IEnumerable<string> cnames)
     {
-        // Vercel'e özgü doğrulama mantığı
+        // Vercel-specific validation logic
         foreach (var cname in cnames)
         {
             if (cname.Contains("vercel.com", StringComparison.OrdinalIgnoreCase) || 
                 cname.Contains("vercel-dns.com", StringComparison.OrdinalIgnoreCase))
             {
-                // Burada ideal olarak Vercel API ile bu alan adının mevcut olup olmadığını kontrol etmeliyiz
-                // Ancak şimdilik basit bir HTTP isteği ile kontrol edebiliriz
+                // Ideally, we should check if this domain exists using Vercel API
+                // But for now, we can check with a simple HTTP request
                 try
                 {
                     using var client = new HttpClient();
                     var response = await client.GetAsync($"https://{cname}");
                     
-                    // 404 durum kodu veya belirli bir hata metni aranabilir
+                    // Check for 404 status code or specific error text
                     if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
-                        // Alan adı mevcut değil, ele geçirilebilir
+                        // Domain doesn't exist, vulnerable to takeover
                         return true;
                     }
                     else
                     {
-                        // Alan adı hala aktif, ele geçirilemez
+                        // Domain is still active, not vulnerable
                         return false;
                     }
                 }
                 catch
                 {
-                    // Bağlantı hatası - muhtemelen ele geçirilebilir
+                    // Connection error - likely vulnerable
                     return true;
                 }
             }
         }
         
-        // Bu validatör bu alan adı için geçerli değil
+        // This validator is not applicable for this domain
         return null;
     }
 }
