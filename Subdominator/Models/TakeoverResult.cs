@@ -1,5 +1,8 @@
-﻿namespace Subdominator.Models;
+using System.Text.Json.Serialization;
 
+namespace Subdominator.Models;
+
+[Serializable]
 public class TakeoverResult
 {
     public bool IsVulnerable { get; set; }
