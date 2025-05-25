@@ -1,4 +1,4 @@
-﻿using Subdominator.Validators;
+using Subdominator.Validators;
 
 namespace Subdominator.Utils;
 
@@ -15,6 +15,8 @@ public static class ValidatorUtils
         {
             "MicrosoftAzure" => _azureValidator, // Use a global instance so it only asks for creds once
             "AWSElasticBeanstalk" => new AWSElasticBeanstalkValidator(),
+            "Vercel" => new VercelValidator(),
+            "Webflow" => new WebflowValidator(),
             _ => null,
         };
     }

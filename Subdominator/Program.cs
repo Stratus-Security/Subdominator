@@ -1,4 +1,4 @@
-﻿using Nager.PublicSuffix;
+using Nager.PublicSuffix;
 using System.Diagnostics;
 using System.CommandLine;
 using Subdominator.Models;
@@ -9,6 +9,9 @@ using CsvHelper.Configuration;
 using Nager.PublicSuffix.RuleProviders;
 using Nager.PublicSuffix.RuleProviders.CacheProviders;
 using Microsoft.Extensions.Configuration;
+using System.Text.Json;
+using System.Collections.Concurrent;
+using Subdominator.Database;
 
 namespace Subdominator;
 
@@ -34,7 +37,20 @@ public class Program
             new Option<bool>(["-q", "--quiet"], "Quiet mode: Only print found results"),
             new Option<string>(["-c", "--csv"], "Heading or column index to parse for CSV file. Forces -l to read as CSV instead of line-delimited") { Name = "CsvHeading" },
             new Option<bool>(["-eu", "--exclude-unlikely"], "Exclude unlikely (edge-case) fingerprints"),
-            new Option<bool>(["--validate"], "Validate the takeovers are exploitable (where possible)")
+            new Option<bool>(["--validate"], "Validate the takeovers are exploitable (where possible)"),
+            new Option<bool>(["--adaptive-threads"], "Automatically adjust thread count based on system resources") { Name = "AdaptiveThreads" },
+            new Option<string>(["--previous-results"], "Path to previous results file for comparison") { Name = "PreviousResults" },
+            new Option<bool>(["--auto-update"], "Automatically update fingerprint database") { Name = "AutoUpdate" },
+            new Option<string>(["--risk-level"], () => "all", "Filter results by risk level (low, medium, high, critical, all)") { Name = "RiskLevel" },
+            new Option<string>(["--service-filter"], "Filter results by service name (e.g. 'AWS', 'Azure')") { Name = "ServiceFilter" },
+            new Option<bool>(["-i", "--interactive"], "Interactive mode: prompt for action when finding vulnerabilities") { Name = "Interactive" },
+            
+            // Database and trend analysis options
+            new Option<bool>(["--no-database"], "Disable storing results in SQLite database") { Name = "UseDatabase", Invert = true },
+            new Option<string>(["--db-path"], () => "vulnerabilities.db", "Path to the SQLite database file") { Name = "DatabasePath" },
+            new Option<bool>(["--trend-report"], "Generate HTML trend report after scanning") { Name = "GenerateTrendReport" },
+            new Option<string>(["--trend-report-path"], () => "trend_report.html", "Path to save the trend report HTML file") { Name = "TrendReportPath" },
+            new Option<bool>(["--trend-summary"], "Print trend analysis summary after scanning") { Name = "PrintTrendSummary" }
         };
 
         command.SetHandler(async (options) =>
@@ -48,6 +64,29 @@ public class Program
 
     public static async Task RunSubdominator(Options o)
     {
+        // Initialize database if enabled
+        VulnerabilityDatabase database = null;
+        string scanId = Guid.NewGuid().ToString();
+        DateTime scanStartTime = DateTime.UtcNow;
+        
+        if (o.UseDatabase)
+        {
+            try
+            {
+                database = new VulnerabilityDatabase(o.DatabasePath);
+                if (!o.Quiet)
+                {
+                    Console.WriteLine($"Using vulnerability database: {Path.GetFullPath(o.DatabasePath)}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"Warning: Failed to initialize database: {ex.Message}");
+                Console.WriteLine("Continuing without database functionality...");
+                Console.ResetColor();
+            }
+        }
         // Print banner!
         if (!o.Quiet)
         {
@@ -121,14 +160,49 @@ public class Program
 
         // Define maximum concurrent tasks
         int maxConcurrentTasks = o.Threads;
+        
+        // Use adaptive threading if enabled
+        if (o.AdaptiveThreads)
+        {
+            maxConcurrentTasks = DetermineOptimalThreadCount();
+            if (!o.Quiet)
+            {
+                Console.WriteLine($"Using adaptive thread count: {maxConcurrentTasks}");
+            }
+        }
+        
         var vulnerableCount = 0;
 
         // Pre-check domains passed in and filter any that are invalid
         var domains = await FilterAndNormalizeDomains(rawDomains, o.Quiet);
 
+        // Load previous results if specified for comparison
+        Dictionary<string, TakeoverResult> previousResults = new();
+        if (!string.IsNullOrEmpty(o.PreviousResults) && File.Exists(o.PreviousResults))
+        {
+            try
+            {
+                var previousResultsJson = await File.ReadAllTextAsync(o.PreviousResults);
+                previousResults = JsonSerializer.Deserialize<Dictionary<string, TakeoverResult>>(previousResultsJson) ?? new();
+                if (!o.Quiet)
+                {
+                    Console.WriteLine($"Loaded {previousResults.Count} previous results for comparison");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"Warning: Failed to load previous results: {ex.Message}");
+                Console.ResetColor();
+            }
+        }
+
+        // Current results dictionary for saving
+        var currentResults = new ConcurrentDictionary<string, TakeoverResult>();
+
         // Pre-load fingerprints to memory
         var hijackChecker = new SubdomainHijack();
-        await hijackChecker.GetFingerprintsAsync(o.ExcludeUnlikely);
+        await hijackChecker.GetFingerprintsAsync(o.ExcludeUnlikely, o.AutoUpdate);
 
         // Do the things
         var stopwatch = new Stopwatch();
@@ -160,7 +234,31 @@ public class Program
 
         await Parallel.ForEachAsync(domains, new ParallelOptions { MaxDegreeOfParallelism = maxConcurrentTasks }, async (domain, cancellationToken) =>
         {
-            var isVulnerable = await CheckAndLogDomain(hijackChecker, domain, o.Validate, o.Verbose, o.Quiet);
+            bool isNew = !previousResults.ContainsKey(domain);
+            var result = await hijackChecker.IsDomainVulnerable(domain, o.Validate, o.AutoUpdate);
+            
+            // Store the result in the current results dictionary
+            if (result.IsVulnerable)
+            {
+                currentResults.TryAdd(domain, result);
+                
+                // Save to database if enabled
+                if (database != null)
+                {
+                    try
+                    {
+                        // Create and save vulnerability record
+                        var vulnerabilityRecord = VulnerabilityRecord.FromTakeoverResult(result, domain, scanId);
+                        database.SaveVulnerability(vulnerabilityRecord);
+                    }
+                    catch
+                    {
+                        // Ignore database errors during scanning to avoid interrupting the scan
+                    }
+                }
+            }
+            
+            var isVulnerable = await CheckAndLogDomain(hijackChecker, domain, o.Validate, o.Verbose, o.Quiet, o.RiskLevel, isNew, o.ServiceFilter, o.Interactive);
             if(isVulnerable)
             {
                 Interlocked.Increment(ref vulnerableCount);
@@ -173,6 +271,27 @@ public class Program
         cts.Cancel(); // Signal the update task to stop
         await updateTask; // Ensure the update task completes before finishing the program
 
+        // Save results for future comparison if output file is specified
+        if (!string.IsNullOrWhiteSpace(o.OutputFile) && currentResults.Any())
+        {
+            try
+            {
+                var resultsJson = JsonSerializer.Serialize(currentResults);
+                string resultsJsonPath = Path.ChangeExtension(o.OutputFile, ".json");
+                await File.WriteAllTextAsync(resultsJsonPath, resultsJson);
+                if (!o.Quiet)
+                {
+                    Console.WriteLine($"Results saved to {resultsJsonPath} for future comparison");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"Warning: Failed to save results for future comparison: {ex.Message}");
+                Console.ResetColor();
+            }
+        }
+
         // One last output for clarity
         if (!o.Quiet)
         {
@@ -180,6 +299,36 @@ public class Program
             var rate = completedTasks / elapsed.TotalSeconds;
             Console.WriteLine($"{completedTasks}/{domains.Count()} domains processed. Average rate: {rate:F2} domains/sec");
             Console.WriteLine($"Done in {stopwatch.Elapsed.TotalSeconds:N2}s! Subdominator found {vulnerableCount} vulnerable domains.");
+        }
+
+        // Save scan record to database and generate trend analysis if enabled
+        if (database != null)
+        {
+            try
+            {
+                // Save scan record
+                database.SaveScan(scanId, scanStartTime, domains.Count(), vulnerableCount, o);
+                
+                // Generate trend report if requested
+                if (o.GenerateTrendReport)
+                {
+                    var analyzer = new TrendAnalyzer(database);
+                    analyzer.GenerateTrendReport(o.TrendReportPath);
+                }
+                
+                // Print trend summary if requested
+                if (o.PrintTrendSummary)
+                {
+                    var analyzer = new TrendAnalyzer(database);
+                    analyzer.PrintTrendSummary();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"Warning: Database operation failed: {ex.Message}");
+                Console.ResetColor();
+            }
         }
 
         // Exit non-zero if we have a takeover, for the DevOps folks
@@ -203,6 +352,25 @@ public class Program
                 break; // Exit loop if the task is canceled
             }
         }
+    }
+    
+    static int DetermineOptimalThreadCount()
+    {
+        // Get available processors
+        int processorCount = Environment.ProcessorCount;
+        
+        // Get available memory (this is approximate)
+        long availableMemoryMB = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / (1024 * 1024);
+        
+        // Calculate thread count based on resources
+        // Memory-based limit: Allow ~10MB per thread
+        int memoryBasedThreads = (int)(availableMemoryMB / 10);
+        
+        // Processor-based limit: 2x processors is usually a good balance
+        int processorBasedThreads = processorCount * 2;
+        
+        // Take the minimum of the two limits, but at least 5 threads and max 200
+        return Math.Max(5, Math.Min(Math.Min(memoryBasedThreads, processorBasedThreads), 200));
     }
 
     static async Task<IEnumerable<string>> FilterAndNormalizeDomains(List<string> domains, bool quiet)
@@ -237,7 +405,52 @@ public class Program
         return normalizedDomains.Where(d => d.IsValid).Select(d => d.Original);
     }
 
-    static async Task<bool> CheckAndLogDomain(SubdomainHijack hijackChecker, string domain, bool validateResults, bool verbose, bool quiet)
+    private static string DetermineRiskLevel(TakeoverResult result)
+    {
+        // Logic to determine risk level based on service and other factors
+        if (result.IsVerified)
+        {
+            return "Critical"; // Verified takeovers are critical
+        }
+        
+        // High risk services that are commonly exploited
+        string[] highRiskServices = new[] { "AWS/S3", "Github", "Heroku", "Azure", "Microsoft Azure" };
+        
+        // Medium risk services 
+        string[] mediumRiskServices = new[] { "Fastly", "Netlify", "Shopify", "Vercel", "Webflow" };
+        
+        // Domain available is generally high risk
+        if (result.MatchedLocation == MatchedLocation.DomainAvailable)
+        {
+            return "High";
+        }
+        
+        if (result.Fingerprint != null)
+        {
+            // High risk services
+            if (highRiskServices.Any(s => result.Fingerprint.Service.Contains(s, StringComparison.OrdinalIgnoreCase)))
+            {
+                return "High";
+            }
+            
+            // Medium risk services
+            if (mediumRiskServices.Any(s => result.Fingerprint.Service.Contains(s, StringComparison.OrdinalIgnoreCase)))
+            {
+                return "Medium";
+            }
+            
+            // Edge cases are generally lower risk
+            if (result.Fingerprint.Status.Equals("Edge case", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Low";
+            }
+        }
+        
+        // Default to medium for other vulnerable services
+        return "Medium";
+    }
+
+    static async Task<bool> CheckAndLogDomain(SubdomainHijack hijackChecker, string domain, bool validateResults, bool verbose, bool quiet, string riskLevel = "all", bool isNew = false, string serviceFilter = "", bool interactive = false)
     {
         bool isFound = false;
         try
@@ -274,12 +487,120 @@ public class Program
                     locationString = $" - AAAA: {string.Join(", ", result.AAAA ?? [])}";
                 }
 
+                // Filter results by risk level if specified
+                if (result.IsVulnerable && riskLevel != "all")
+                {
+                    var currentRisk = DetermineRiskLevel(result).ToLower();
+                    if (currentRisk != riskLevel.ToLower())
+                    {
+                        // Skip this result if it doesn't match the requested risk level
+                        return isFound;
+                    }
+                }
+                
+                // Filter by service name if specified
+                if (result.IsVulnerable && !string.IsNullOrWhiteSpace(serviceFilter) && fingerPrintName != "-")
+                {
+                    if (!fingerPrintName.Contains(serviceFilter, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Skip this result if the service name doesn't contain the filter
+                        return isFound;
+                    }
+                }
+
                 // Thread-safe console print and append to results file
                 lock (_fileLock)
                 {
+                    // Interactive mode handling for vulnerable domains
+                    if (interactive && result.IsVulnerable)
+                    {
+                        // Display the vulnerability information
+                        Console.WriteLine($"\n============ VULNERABILITY FOUND ============");
+                        Console.WriteLine($"Domain: {domain}");
+                        Console.WriteLine($"Service: {fingerPrintName}");
+                        Console.WriteLine($"Risk Level: {DetermineRiskLevel(result)}");
+                        Console.WriteLine($"Record Type: {result.MatchedRecord}");
+                        Console.WriteLine($"Match Location: {result.MatchedLocation}");
+                        
+                        if (result.CNAMES?.Any() == true)
+                            Console.WriteLine($"CNAME Records: {string.Join(", ", result.CNAMES)}");
+                        if (result.A?.Any() == true)
+                            Console.WriteLine($"A Records: {string.Join(", ", result.A)}");
+                        if (result.AAAA?.Any() == true)
+                            Console.WriteLine($"AAAA Records: {string.Join(", ", result.AAAA)}");
+                            
+                        Console.WriteLine("\nDo you want to (s)kip, (c)ontinue, (d)etails, or (q)uit? [c]: ");
+                        
+                        var key = Console.ReadKey(true).KeyChar.ToString().ToLower();
+                        Console.WriteLine();
+                        
+                        switch (key)
+                        {
+                            case "s": // Skip this result
+                                return isFound;
+                            case "d": // Show more details
+                                Console.WriteLine("\n======== VULNERABILITY DETAILS ========");
+                                Console.WriteLine("What is Subdomain Takeover?");
+                                Console.WriteLine("Subdomain takeover occurs when an attacker gains control of a subdomain of a target domain.");
+                                Console.WriteLine("This typically happens when a DNS record points to a service that the attacker can claim.");
+                                Console.WriteLine("\nPotential Impact:");
+                                Console.WriteLine("- Hosting malicious content under your domain");
+                                Console.WriteLine("- Stealing cookies and credentials");
+                                Console.WriteLine("- Damaging brand reputation");
+                                Console.WriteLine("\nRecommended Fix:");
+                                Console.WriteLine("1. Remove the DNS record pointing to the vulnerable service");
+                                Console.WriteLine("2. If the service is needed, reclaim it or set it up properly");
+                                Console.WriteLine("3. Review all DNS records for similar issues");
+                                Console.WriteLine("\nPress any key to continue...");
+                                Console.ReadKey(true);
+                                break;
+                            case "q": // Quit the program
+                                Console.WriteLine("Exiting program at user request.");
+                                Environment.Exit(0);
+                                break;
+                            default: // Continue
+                                // Just fall through to the normal output
+                                break;
+                        }
+                    }
+                    
+                    // New finding indicator
+                    if (isNew && result.IsVulnerable)
+                    {
+                        Console.Write("🆕 "); // New finding emoji indicator
+                    }
+                    
                     Console.Write($"{(result.IsVerified ? "✅ " : "")}[");
-                    Console.ForegroundColor = result.IsVulnerable ? ConsoleColor.Red : ConsoleColor.Green;
-                    Console.Write(fingerPrintName);
+                    
+                    // Set color based on risk level for vulnerable domains
+                    if (result.IsVulnerable)
+                    {
+                        string risk = DetermineRiskLevel(result);
+                        switch (risk.ToLower())
+                        {
+                            case "critical":
+                                Console.ForegroundColor = ConsoleColor.DarkRed;
+                                break;
+                            case "high":
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                break;
+                            case "medium":
+                                Console.ForegroundColor = ConsoleColor.Yellow;
+                                break;
+                            case "low":
+                                Console.ForegroundColor = ConsoleColor.Blue;
+                                break;
+                        }
+                        
+                        // Also display the risk level
+                        Console.Write($"{risk}:{fingerPrintName}");
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.Write(fingerPrintName);
+                    }
+                    
                     Console.ResetColor();
                     Console.Write($"] {domain}" + locationString + Environment.NewLine);
 
