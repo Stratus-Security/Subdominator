@@ -29,7 +29,7 @@ public class Program
             new Option<string>(["-d", "--domain"], "A single domain to check"),
             new Option<string>(["-l", "--list"], "A list of domains to check (line delimited)") { Name = "DomainsFile" }, 
             new Option<string>(["-o", "--output"], "Output subdomains to a file") { Name = "OutputFile" },
-            new Option<int>(["-t", "--threads"], () => 50, "Number of domains to check at once"),
+            new Option<int>(["-t", "--threads"], () => 50, "Number of domains to check at once (0 or less uses default of 50)"),
             new Option<bool>(["-v", "--verbose"], "Print extra information"),
             new Option<bool>(["-q", "--quiet"], "Quiet mode: Only print found results"),
             new Option<string>(["-c", "--csv"], "Heading or column index to parse for CSV file. Forces -l to read as CSV instead of line-delimited") { Name = "CsvHeading" },
@@ -120,7 +120,7 @@ public class Program
         }
 
         // Define maximum concurrent tasks
-        int maxConcurrentTasks = o.Threads;
+        int maxConcurrentTasks = ValidateThreadCount(o.Threads);
         var vulnerableCount = 0;
 
         // Pre-check domains passed in and filter any that are invalid
@@ -295,5 +295,10 @@ public class Program
             Console.WriteLine(ex.ToString());
         }
         return isFound;
+    }
+
+    public static int ValidateThreadCount(int threads)
+    {
+        return threads > 0 ? threads : 50;
     }
 }
