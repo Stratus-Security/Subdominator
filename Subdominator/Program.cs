@@ -160,7 +160,7 @@ public class Program
 
         await Parallel.ForEachAsync(domains, new ParallelOptions { MaxDegreeOfParallelism = maxConcurrentTasks }, async (domain, cancellationToken) =>
         {
-            var isVulnerable = await CheckAndLogDomain(hijackChecker, domain, o.Validate, o.Verbose, o.Quiet);
+            var isVulnerable = await CheckAndLogDomain(hijackChecker, domain, o.Validate, o.Verbose, o.Quiet, o.ExcludeUnlikely);
             if(isVulnerable)
             {
                 Interlocked.Increment(ref vulnerableCount);
@@ -237,12 +237,12 @@ public class Program
         return normalizedDomains.Where(d => d.IsValid).Select(d => d.Original);
     }
 
-    static async Task<bool> CheckAndLogDomain(SubdomainHijack hijackChecker, string domain, bool validateResults, bool verbose, bool quiet)
+    static async Task<bool> CheckAndLogDomain(SubdomainHijack hijackChecker, string domain, bool validateResults, bool verbose, bool quiet, bool excludeUnlikely)
     {
         bool isFound = false;
         try
         {
-            var result = await hijackChecker.IsDomainVulnerable(domain, validateResults);
+            var result = await hijackChecker.IsDomainVulnerable(domain, validateResults, excludeUnlikely);
             if (result.IsVulnerable || verbose)
             {
                 if (result.IsVulnerable)
