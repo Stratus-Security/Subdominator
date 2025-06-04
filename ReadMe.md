@@ -30,7 +30,7 @@ Subdominator -d sub.example.com
 -d, --domain <domain>    A single domain to check
 -l, --list <list>        A list of domains to check (line delimited)
 -o, --output <output>    Output subdomains to a file
--t, --threads <threads>  Number of domains to check at once [default: 50]
+-t, --threads <threads>  Number of domains to check at once; values \<= 0 use the default [default: 50]
 -v, --verbose            Print extra information
 -q, --quiet              Quiet mode: Only print found results
 -eu, --exclude-unlikely  Exclude unlikely (edge-case) fingerprints
