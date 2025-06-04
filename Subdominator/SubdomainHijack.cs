@@ -438,7 +438,18 @@ public class SubdomainHijack
             // If we didn't get NXDOMAIN'd
             if (response != null)
             {
-                responseBody = await response.Content.ReadAsStringAsync();
+                try
+                {
+                    responseBody = await response.Content.ReadAsStringAsync();
+                }
+                catch (InvalidOperationException)
+                {
+                    // Fallback when an invalid charset is specified in the
+                    // response headers. Read as bytes and assume UTF8 to avoid
+                    // crashing. See GH issue #11.
+                    var bytes = await response.Content.ReadAsByteArrayAsync();
+                    responseBody = Encoding.UTF8.GetString(bytes);
+                }
 
                 // Check if HTTP status matches the fingerprint
                 if (fingerprint.HttpStatus.HasValue && (int)response.StatusCode == fingerprint.HttpStatus.Value)
