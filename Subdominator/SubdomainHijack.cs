@@ -306,9 +306,9 @@ public class SubdomainHijack
         return _fingerprints;
     }
 
-    public async Task<TakeoverResult> IsDomainVulnerable(string domain, bool validateResults, bool update = false)
+    public async Task<TakeoverResult> IsDomainVulnerable(string domain, bool validateResults, bool excludeUnlikely = false, bool update = false)
     {
-        var fingerprints = await GetFingerprintsAsync(update);
+        var fingerprints = await GetFingerprintsAsync(excludeUnlikely: excludeUnlikely, update: update);
 
         // DNS Lookup
         var subdomainDns = await GetDnsForSubdomain(domain);

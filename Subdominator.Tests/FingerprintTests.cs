@@ -67,4 +67,16 @@ public class FingerprintTests
 
         return $"{subdomain}.{baseCname}";
     }
+
+    [TestMethod]
+    public async Task ShouldExcludeEdgeCaseFingerprints()
+    {
+        var hijack = new SubdomainHijack();
+        var allFingerprints = await hijack.GetFingerprintsAsync(false);
+        Assert.IsTrue(allFingerprints.Any(f => f.Status.ToLower() == "edge case"));
+
+        hijack = new SubdomainHijack();
+        var filteredFingerprints = await hijack.GetFingerprintsAsync(true);
+        Assert.IsFalse(filteredFingerprints.Any(f => f.Status.ToLower() == "edge case"));
+    }
 }
