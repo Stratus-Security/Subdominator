@@ -251,9 +251,6 @@ public class Program
                 }
                 var fingerPrintName = result.Fingerprint == null ? "-" : result.Fingerprint.Service;
 
-                // Build the output string
-                var output = $"{(result.IsVerified ? "✅ " : "")}[{fingerPrintName}] {domain} - CNAME: {string.Join(", ", result.CNAMES ?? [])}";
-
                 // Show where we matched the takeover
                 var locationString = "";
                 if(result.MatchedRecord == MatchedRecord.CNAME)
@@ -274,6 +271,9 @@ public class Program
                     locationString = $" - AAAA: {string.Join(", ", result.AAAA ?? [])}";
                 }
 
+                // Build the output string after determining locationString
+                var output = $"{(result.IsVerified ? "✅ " : "")}[{fingerPrintName}] {domain}{locationString}";
+
                 // Thread-safe console print and append to results file
                 lock (_fileLock)
                 {
@@ -281,11 +281,11 @@ public class Program
                     Console.ForegroundColor = result.IsVulnerable ? ConsoleColor.Red : ConsoleColor.Green;
                     Console.Write(fingerPrintName);
                     Console.ResetColor();
-                    Console.Write($"] {domain}" + locationString + Environment.NewLine);
+                    Console.Write($"] {domain}{locationString}" + Environment.NewLine);
 
                     if (_outputFileWriter != null)
                     {
-                        _outputFileWriter.WriteLine(output + locationString);
+                        _outputFileWriter.WriteLine(output);
                     }
                 }
             }
